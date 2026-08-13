@@ -68,13 +68,26 @@ Sedang berjalan.
 - [x] Pencarian balita dengan filter langsung (nama/posyandu + jenis kelamin + posyandu dropdown)
 - [x] Aksi "Periksa Status Gizi" dari kartu balita → `/cek-status-gizi?balita={id}` (pre-select otomatis)
 
-**Riwayat Cek** (frontend, berjalan):
+**Riwayat Cek** (frontend, selesai semua):
 - [x] Halaman daftar riwayat cek balita (`/riwayat`, dikelompokkan per balita)
 - [x] Halaman detail pemeriksaan balita (`/riwayat/[id]`)
-- [ ] *(sisa task — cek `task next`, kemungkinan "Koreksi riwayat")*
+- [x] Alur ubah & hapus pemeriksaan (dialog ubah dengan hitung ulang status
+      otomatis + field catatan; hapus dengan konfirmasi)
 
-Backend untuk Data Balita & Riwayat Cek (CRUD balita, dsb.) belum dikerjakan —
-menyusul setelah frontend fase ini selesai (frontend-first).
+**Grafik Pertumbuhan** (frontend, selesai semua):
+- [x] Halaman grafik pertumbuhan dengan data tiruan (`/grafik`, recharts +
+      shadcn chart wrapper)
+- [x] Grafik berat badan per umur (label sumbu, legend)
+- [x] Grafik tinggi badan per umur (label sumbu, legend)
+- [x] Legenda + pita "rentang normal" (Area range antara batas kurang &
+      batas atas visual) di kedua grafik
+- [x] Pesan kosong untuk 3 skenario: belum ada balita sama sekali, belum
+      pilih balita, balita terpilih belum punya riwayat (dengan CTA ke
+      halaman terkait)
+
+Backend untuk Data Balita, Riwayat Cek, & Grafik (CRUD balita, dsb.) belum
+dikerjakan — menyusul setelah frontend fase ini selesai (frontend-first).
+Task berikutnya: fitur **Prediksi Risiko** (frontend).
 
 ### Fase 3 — Login & Pengaturan
 Belum dimulai.

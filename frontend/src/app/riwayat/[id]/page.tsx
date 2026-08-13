@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { UbahRiwayatDialog } from "@/components/ubah-riwayat-dialog";
 import {
   Balita,
   STATUS_GIZI_CATATAN,
@@ -269,33 +270,37 @@ export default function DetailRiwayatPage({
           </CardContent>
         </Card>
 
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={<Button variant="outline" className="text-rose-600" />}
-          >
-            <FontAwesomeIcon icon={faTrash} />
-            Hapus Data Pemeriksaan Ini
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Hapus pemeriksaan ini?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Catatan pemeriksaan {balita?.nama ?? "balita ini"} tanggal{" "}
-                {entry.tanggalCek} akan dihapus. Tindakan ini tidak bisa
-                dibatalkan.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Batal</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-rose-600 hover:bg-rose-700"
-                onClick={handleHapus}
-              >
-                Hapus
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="grid grid-cols-2 gap-3">
+          <UbahRiwayatDialog entry={entry} balita={balita} />
+
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={<Button variant="outline" className="text-rose-600" />}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Hapus
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Hapus pemeriksaan ini?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Catatan pemeriksaan {balita?.nama ?? "balita ini"} tanggal{" "}
+                  {entry.tanggalCek} akan dihapus. Tindakan ini tidak bisa
+                  dibatalkan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-rose-600 hover:bg-rose-700"
+                  onClick={handleHapus}
+                >
+                  Hapus
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </div>
   );

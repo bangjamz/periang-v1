@@ -78,6 +78,14 @@ export function getRiwayatById(id: string): RiwayatCek | null {
   return bacaSemua().find((r) => r.id === id) ?? null;
 }
 
+export function perbaruiRiwayatCek(
+  id: string,
+  data: Partial<Omit<RiwayatCek, "id" | "balitaId" | "createdAt">>,
+): void {
+  tulisSemua(bacaSemua().map((r) => (r.id === id ? { ...r, ...data } : r)));
+  segarkanCache();
+}
+
 export function hapusRiwayatCek(id: string): void {
   tulisSemua(bacaSemua().filter((r) => r.id !== id));
   segarkanCache();

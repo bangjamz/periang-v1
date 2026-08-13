@@ -41,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/grafik",
     label: "Grafik",
     icon: faChartLine,
-    available: false,
+    available: true,
     color: "text-emerald-500",
   },
   {

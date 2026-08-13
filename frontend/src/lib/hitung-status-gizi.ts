@@ -14,13 +14,21 @@ export type AnalisisGizi = {
  * Placeholder: perhitungan sederhana sebagai pengganti tabel standar WHO/KMS.
  * Akan diganti perhitungan resmi berbasis z-score saat backend tersedia.
  */
+export function standarBeratKg(umurBulan: number): number {
+  return 3 + umurBulan * 0.4;
+}
+
+export function standarTinggiCm(umurBulan: number): number {
+  return 50 + umurBulan * 1.5;
+}
+
 export function analisisStatusGizi(
   umurBulan: number,
   beratKg: number,
   tinggiCm: number,
 ): AnalisisGizi {
-  const beratIdealKg = 3 + umurBulan * 0.4;
-  const tinggiIdealCm = 50 + umurBulan * 1.5;
+  const beratIdealKg = standarBeratKg(umurBulan);
+  const tinggiIdealCm = standarTinggiCm(umurBulan);
 
   const rasioBerat = beratKg / beratIdealKg;
   const rasioTinggi = tinggiCm / tinggiIdealCm;
