@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarDay,
@@ -30,23 +31,23 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { BalitaPicker } from "@/components/balita-picker";
 import {
-  DUMMY_BALITA,
   STATUS_GIZI_CATATAN,
   STATUS_GIZI_DESKRIPSI,
   STATUS_GIZI_LABEL,
   StatusGizi,
 } from "@/lib/dummy-data";
 import {
+  getBalitaServerSnapshot,
+  getBalitaSnapshot,
+  subscribeBalita,
+} from "@/lib/balita-store";
+import {
   analisisStatusGizi,
   type AnalisisGizi,
 } from "@/lib/hitung-status-gizi";
 import { formatUmur, hitungUmurBulan } from "@/lib/umur";
 import { cn } from "@/lib/utils";
-import {
-  getRiwayatByBalita,
-  simpanRiwayatCek,
-  type RiwayatCek,
-} from "@/lib/riwayat-store";
+import { getRiwayatByBalita, simpanRiwayatCek } from "@/lib/riwayat-store";
 
 const STATUS_STYLE: Record<
   StatusGizi,
@@ -86,18 +87,32 @@ function hariIni() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function CekStatusGiziPage() {
-  const [balitaId, setBalitaId] = useState<string>("");
+function CekStatusGiziContent() {
+  const searchParams = useSearchParams();
+  const balitaList = useSyncExternalStore(
+    subscribeBalita,
+    getBalitaSnapshot,
+    getBalitaServerSnapshot,
+  );
+  const [balitaId, setBalitaId] = useState<string>(
+    () => searchParams.get("balita") ?? "",
+  );
   const [tanggalCek, setTanggalCek] = useState(hariIni);
   const [beratKg, setBeratKg] = useState("");
   const [tinggiCm, setTinggiCm] = useState("");
   const [hasil, setHasil] = useState<HasilCek | null>(null);
   const [tersimpan, setTersimpan] = useState(false);
-  const [riwayatBalita, setRiwayatBalita] = useState<RiwayatCek[]>([]);
+  const [versiRiwayat, setVersiRiwayat] = useState(0);
+
+  const riwayatBalita = useMemo(() => {
+    if (!balitaId) return [];
+    return getRiwayatByBalita(balitaId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balitaId, versiRiwayat]);
 
   const balitaTerpilih = useMemo(
-    () => DUMMY_BALITA.find((b) => b.id === balitaId) ?? null,
-    [balitaId],
+    () => balitaList.find((b) => b.id === balitaId) ?? null,
+    [balitaList, balitaId],
   );
 
   const umurSaatCek = useMemo(() => {
@@ -137,7 +152,7 @@ export default function CekStatusGiziPage() {
       tinggiCm: hasil.tinggiCm,
       status: hasil.status,
     });
-    setRiwayatBalita(getRiwayatByBalita(balitaId));
+    setVersiRiwayat((v) => v + 1);
     setTersimpan(true);
   }
 
@@ -145,7 +160,6 @@ export default function CekStatusGiziPage() {
     setBalitaId(id);
     setHasil(null);
     setTersimpan(false);
-    setRiwayatBalita(getRiwayatByBalita(id));
   }
 
   return (
@@ -182,7 +196,7 @@ export default function CekStatusGiziPage() {
               <Label htmlFor="balita">Pilih Balita</Label>
               <BalitaPicker
                 id="balita"
-                balitaList={DUMMY_BALITA}
+                balitaList={balitaList}
                 value={balitaId}
                 onSelect={handleGantiBalita}
               />
@@ -413,5 +427,13 @@ export default function CekStatusGiziPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CekStatusGiziPage() {
+  return (
+    <Suspense fallback={null}>
+      <CekStatusGiziContent />
+    </Suspense>
   );
 }

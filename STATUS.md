@@ -58,8 +58,23 @@ Kredensial default di `.env`: `DB_USERNAME=bangjamz`, tanpa password
 17 test (unit + feature) lolos. Jalankan `php artisan test` dari `backend/`.
 
 ### Fase 2 — Data, Riwayat, Grafik, Prediksi
-Sedang berjalan — task pertama: **Data Balita** (frontend, halaman daftar
-balita dengan data tiruan).
+Sedang berjalan.
+
+**Data Balita** (frontend, selesai semua):
+- [x] Halaman daftar balita dengan data tiruan (`/balita`)
+- [x] Form tambah balita dengan validasi (dialog, localStorage via `balita-store.ts`)
+- [x] Form ubah balita dengan data terisi (dialog sama, mode `ubah`)
+- [x] Tombol hapus balita dengan konfirmasi (cascade hapus riwayat terkait)
+- [x] Pencarian balita dengan filter langsung (nama/posyandu + jenis kelamin + posyandu dropdown)
+- [x] Aksi "Periksa Status Gizi" dari kartu balita → `/cek-status-gizi?balita={id}` (pre-select otomatis)
+
+**Riwayat Cek** (frontend, berjalan):
+- [x] Halaman daftar riwayat cek balita (`/riwayat`, dikelompokkan per balita)
+- [x] Halaman detail pemeriksaan balita (`/riwayat/[id]`)
+- [ ] *(sisa task — cek `task next`, kemungkinan "Koreksi riwayat")*
+
+Backend untuk Data Balita & Riwayat Cek (CRUD balita, dsb.) belum dikerjakan —
+menyusul setelah frontend fase ini selesai (frontend-first).
 
 ### Fase 3 — Login & Pengaturan
 Belum dimulai.
@@ -81,3 +96,12 @@ Belum dimulai.
 - PRD sempat diperbarui beberapa kali selama pengerjaan (v1 → v6): tambahan
   requirement mobile-first + bottom navigation, responsive tablet/PC, dan
   visual ceria dengan Font Awesome. Semua sudah diadopsi di frontend.
+- Data balita & riwayat cek disimpan di **localStorage** (`balita-store.ts`,
+  `riwayat-store.ts`), memakai pola `useSyncExternalStore` agar reaktif lintas
+  komponen tanpa Context/refetch manual. Ini akan diganti pemanggilan API
+  backend saat wiring dilakukan.
+- Base UI (dipakai shadcn di project ini, bukan Radix): saat `Button`
+  di-render sebagai elemen non-`<button>` (mis. `render={<Link .../>}`), wajib
+  tambahkan prop `nativeButton={false}` — kalau lupa, muncul console error +
+  badge "1 Issue" di dev overlay Next.js (sudah 2x kejadian, dicatat di sini
+  supaya tidak terulang).

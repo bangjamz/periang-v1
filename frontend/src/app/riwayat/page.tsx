@@ -1,26 +1,37 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
   faCircleExclamation,
   faClockRotateLeft,
   faMagnifyingGlass,
+  faMars,
+  faQuestion,
   faRulerVertical,
   faTrash,
   faTriangleExclamation,
+  faVenus,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { DUMMY_BALITA, STATUS_GIZI_LABEL, StatusGizi } from "@/lib/dummy-data";
+import { Balita, STATUS_GIZI_LABEL, StatusGizi } from "@/lib/dummy-data";
+import {
+  getBalitaServerSnapshot,
+  getBalitaSnapshot,
+  subscribeBalita,
+} from "@/lib/balita-store";
 import {
   getRiwayatServerSnapshot,
   getRiwayatSnapshot,
   hapusRiwayatCek,
   subscribeRiwayat,
+  type RiwayatCek,
 } from "@/lib/riwayat-store";
 import { formatUmur } from "@/lib/umur";
 import { cn } from "@/lib/utils";
@@ -50,25 +61,53 @@ const STATUS_STYLE: Record<
   },
 };
 
+const AVATAR_COLOR: Record<Balita["jenisKelamin"], string> = {
+  L: "bg-sky-100 text-sky-600",
+  P: "bg-pink-100 text-pink-600",
+};
+
+type GrupRiwayat = {
+  balitaId: string;
+  balita: Balita | null;
+  entries: RiwayatCek[];
+};
+
 export default function RiwayatPage() {
   const riwayat = useSyncExternalStore(
     subscribeRiwayat,
     getRiwayatSnapshot,
     getRiwayatServerSnapshot,
   );
+  const balitaList = useSyncExternalStore(
+    subscribeBalita,
+    getBalitaSnapshot,
+    getBalitaServerSnapshot,
+  );
   const [query, setQuery] = useState("");
 
-  const hasil = useMemo(() => {
+  const grup = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return riwayat
-      .map((r) => ({
-        entry: r,
-        balita: DUMMY_BALITA.find((b) => b.id === r.balitaId) ?? null,
-      }))
-      .filter(({ balita }) =>
-        q ? (balita?.nama.toLowerCase().includes(q) ?? false) : true,
+    const peta = new Map<string, GrupRiwayat>();
+
+    for (const entry of riwayat) {
+      if (!peta.has(entry.balitaId)) {
+        peta.set(entry.balitaId, {
+          balitaId: entry.balitaId,
+          balita: balitaList.find((b) => b.id === entry.balitaId) ?? null,
+          entries: [],
+        });
+      }
+      peta.get(entry.balitaId)!.entries.push(entry);
+    }
+
+    return Array.from(peta.values())
+      .filter((g) =>
+        q ? (g.balita?.nama.toLowerCase().includes(q) ?? false) : true,
+      )
+      .sort((a, b) =>
+        b.entries[0].createdAt.localeCompare(a.entries[0].createdAt),
       );
-  }, [riwayat, query]);
+  }, [riwayat, balitaList, query]);
 
   function handleHapus(id: string) {
     hapusRiwayatCek(id);
@@ -83,10 +122,10 @@ export default function RiwayatPage() {
           </span>
           <div>
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Riwayat Pemeriksaan
+              Riwayat Cek
             </h1>
             <p className="text-sm text-amber-50/90">
-              Hasil cek status gizi yang tersimpan di perangkat ini.
+              Semua hasil cek status gizi, dikelompokkan per balita.
             </p>
           </div>
         </div>
@@ -106,7 +145,7 @@ export default function RiwayatPage() {
           />
         </div>
 
-        {hasil.length === 0 && (
+        {grup.length === 0 && (
           <Card className="border-dashed shadow-none">
             <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
               <FontAwesomeIcon
@@ -122,44 +161,79 @@ export default function RiwayatPage() {
           </Card>
         )}
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {hasil.map(({ entry, balita }) => (
-            <Card key={entry.id} className="shadow-sm">
-              <CardContent className="flex flex-col gap-2 py-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {balita?.nama ?? "Balita tidak ditemukan"}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {entry.tanggalCek} · {formatUmur(entry.umurBulan)}
-                    </p>
+        <div className="flex flex-col gap-4">
+          {grup.map(({ balitaId, balita, entries }) => (
+            <Card key={balitaId} className="shadow-sm">
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <Avatar
+                  className={cn(
+                    balita
+                      ? AVATAR_COLOR[balita.jenisKelamin]
+                      : "bg-zinc-100 text-zinc-400",
+                  )}
+                >
+                  <AvatarFallback className="bg-transparent">
+                    <FontAwesomeIcon
+                      icon={
+                        !balita
+                          ? faQuestion
+                          : balita.jenisKelamin === "L"
+                            ? faMars
+                            : faVenus
+                      }
+                      className="size-3.5"
+                    />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle>
+                    {balita?.nama ?? "Balita tidak ditemukan"}
+                  </CardTitle>
+                  <p className="text-xs text-zinc-500">
+                    {entries.length} pemeriksaan
+                    {balita ? ` · ${balita.posyandu}` : ""}
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {entries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <Link
+                      href={`/riwayat/${entry.id}`}
+                      className="flex flex-1 flex-wrap items-center gap-2 hover:underline"
+                    >
+                      <span className="text-zinc-500">
+                        {entry.tanggalCek} · {formatUmur(entry.umurBulan)}
+                      </span>
+                      <span>
+                        {entry.beratKg} kg · {entry.tinggiCm} cm
+                      </span>
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                          STATUS_STYLE[entry.status].badge,
+                        )}
+                      >
+                        <FontAwesomeIcon
+                          icon={STATUS_STYLE[entry.status].icon}
+                        />
+                        {STATUS_GIZI_LABEL[entry.status]}
+                      </span>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-zinc-400 hover:text-rose-600"
+                      onClick={() => handleHapus(entry.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="size-3.5" />
+                      <span className="sr-only">Hapus</span>
+                    </Button>
                   </div>
-                  <span
-                    className={cn(
-                      "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
-                      STATUS_STYLE[entry.status].badge,
-                    )}
-                  >
-                    <FontAwesomeIcon icon={STATUS_STYLE[entry.status].icon} />
-                    {STATUS_GIZI_LABEL[entry.status]}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400">
-                  <span>
-                    {entry.beratKg} kg · {entry.tinggiCm} cm
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-zinc-400 hover:text-rose-600"
-                    onClick={() => handleHapus(entry.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrash} className="size-3.5" />
-                    <span className="sr-only">Hapus</span>
-                  </Button>
-                </div>
+                ))}
               </CardContent>
             </Card>
           ))}

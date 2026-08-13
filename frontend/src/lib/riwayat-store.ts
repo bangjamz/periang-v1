@@ -8,6 +8,7 @@ export type RiwayatCek = {
   beratKg: number;
   tinggiCm: number;
   status: StatusGizi;
+  catatan?: string;
   createdAt: string;
 };
 
@@ -73,7 +74,16 @@ export function getRiwayatByBalita(balitaId: string): RiwayatCek[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+export function getRiwayatById(id: string): RiwayatCek | null {
+  return bacaSemua().find((r) => r.id === id) ?? null;
+}
+
 export function hapusRiwayatCek(id: string): void {
   tulisSemua(bacaSemua().filter((r) => r.id !== id));
+  segarkanCache();
+}
+
+export function hapusRiwayatByBalita(balitaId: string): void {
+  tulisSemua(bacaSemua().filter((r) => r.balitaId !== balitaId));
   segarkanCache();
 }

@@ -6,6 +6,9 @@ export type Balita = {
   jenisKelamin: JenisKelamin;
   tanggalLahir: string;
   posyandu: string;
+  beratLahirKg?: number;
+  tinggiLahirCm?: number;
+  alamat?: string;
 };
 
 export const DUMMY_BALITA: Balita[] = [

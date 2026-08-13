@@ -27,7 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/balita",
     label: "Balita",
     icon: faBaby,
-    available: false,
+    available: true,
     color: "text-pink-500",
   },
   {
