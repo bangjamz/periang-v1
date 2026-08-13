@@ -44,14 +44,22 @@ Kredensial default di `.env`: `DB_USERNAME=bangjamz`, tanpa password
 - [x] Buat alur simpan hasil riwayat lokal (localStorage)
 - [x] Buat halaman riwayat dari data lokal (`/riwayat`)
 
-**Backend** (berjalan):
-- [x] Buat tabel riwayat pemeriksaan gizi dan migrasi (`pemeriksaan` table +
-      model `Pemeriksaan`; `balita_id` belum ada FK constraint — menunggu
-      tabel `balita` dibuat di task berikutnya)
-- [ ] *(sisa task backend fase 1 lainnya — cek `task next` untuk urutan resmi)*
+**Backend** (selesai semua):
+- [x] Buat tabel riwayat pemeriksaan gizi dan migrasi (`pemeriksaan` table + model `Pemeriksaan`)
+- [x] Buat endpoint daftar balita pemeriksaan (`GET /api/balita`, + tabel `balita` + seeder selaras dummy frontend)
+- [x] Buat service penentu status gizi (`StatusGiziService` — klasifikasi
+      Gomez/Waterlow persen-median dari referensi WHO, bukan lagi formula
+      linear dummy)
+- [x] Buat endpoint simpan hasil pemeriksaan (`POST /api/pemeriksaan`)
+- [x] Buat endpoint riwayat pemeriksaan balita (`GET /api/pemeriksaan`, filter `?balita_id=`)
+- [x] Tambah validasi input pemeriksaan di backend (pesan bahasa Indonesia +
+      validasi tanggal cek tidak boleh sebelum tanggal lahir)
+
+17 test (unit + feature) lolos. Jalankan `php artisan test` dari `backend/`.
 
 ### Fase 2 — Data, Riwayat, Grafik, Prediksi
-Belum dimulai.
+Sedang berjalan — task pertama: **Data Balita** (frontend, halaman daftar
+balita dengan data tiruan).
 
 ### Fase 3 — Login & Pengaturan
 Belum dimulai.
@@ -61,9 +69,12 @@ Belum dimulai.
 - Data balita di frontend masih **dummy** (`frontend/src/lib/dummy-data.ts`) —
   8 balita contoh. Perlu diselaraskan dengan seeder backend saat tabel
   `balita` & endpoint API dibuat.
-- Perhitungan status gizi di frontend (`hitung-status-gizi.ts`) adalah
-  **placeholder sederhana**, bukan standar WHO/KMS resmi — harus diganti
-  logika resmi di backend Laravel.
+- Perhitungan status gizi di frontend (`hitung-status-gizi.ts`) masih
+  **placeholder sederhana** (belum dipanggil ke API backend — frontend fase 1
+  murni dummy sesuai strategi frontend-first). Backend sudah punya versi
+  resminya di `StatusGiziService` (klasifikasi Gomez/Waterlow). Saat wiring
+  API dilakukan (biasanya di fase lanjut atau task terpisah), frontend perlu
+  diarahkan memanggil `POST /api/pemeriksaan` alih-alih hitung lokal.
 - Nama tabel di database backend memakai singular non-plural gaya Indonesia
   (`pemeriksaan`, bukan `pemeriksaans`) — ikuti konvensi ini untuk tabel lain
   (`balita`, `faktor_risiko`, `prediksi`).

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusGizi;
 use Illuminate\Database\Eloquent\Model;
 
 class Pemeriksaan extends Model
@@ -35,11 +36,17 @@ class Pemeriksaan extends Model
             'berat_kg' => 'decimal:2',
             'tinggi_cm' => 'decimal:2',
             'tanggal_cek' => 'date',
+            'status_gizi' => StatusGizi::class,
         ];
     }
 
     public function pembuat()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function balita()
+    {
+        return $this->belongsTo(Balita::class, 'balita_id');
     }
 }
