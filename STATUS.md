@@ -174,13 +174,32 @@ Sedang berjalan.
 
 78 test (unit + feature) lolos. Jalankan `php artisan test` dari `backend/`.
 
-**Backend Fase 3 selesai — seluruh plan PERIANG (Fase 1–3) selesai.**
-Task berikutnya: **wiring frontend ke API backend** (ganti localStorage
-`auth-store.ts`/`kader-store.ts`/`balita-store.ts`/dst. dengan pemanggilan
-API asli + token Sanctum) — lihat catatan implementasi di bawah untuk daftar
-titik yang perlu diganti. Ini belum termasuk task terpisah di plan
-NgodingPakeAI; jalankan `task next` lagi setelah reconnect untuk konfirmasi
-apakah ada task lanjutan yang baru muncul.
+**Backend Fase 3 selesai.**
+
+### Fase 4 (baru) — Polish UI & Integrasi Backend
+Ditambahkan ke plan NgodingPakeAI 2026-08-14 atas permintaan user, berisi 36
+task di 4 fitur, semua status `todo`:
+
+- **Hubungkan Aplikasi ke Server** — wiring frontend ke API backend asli
+  (ganti localStorage `auth-store.ts`/`kader-store.ts`/`balita-store.ts`/dst.
+  dengan pemanggilan API + token Sanctum), termasuk komponen loading/error
+  state.
+- **Perbaiki Menu Bawah di HP** — bottom nav mobile: perbesar ikon & label,
+  perbaiki jarak antar item & area sentuh, tambah safe-area/padding, pastikan
+  tidak terpotong di layar HP.
+- **Huruf Ramah dan Angka Menonjol** — ganti font global ke yang lebih
+  ramah/mudah dibaca, skala tipografi & spasi baris, "big number" styling
+  untuk angka penting (hasil cek gizi, riwayat, grafik, skor risiko prediksi).
+- **Pasang Gambar dan Maskot Aplikasi** — implementasi aset di
+  `assets/` (brand icon/favicon, logo, hero image, maskot "Si Tumbuh",
+  ilustrasi karakter, gambar onboarding 3 langkah, ilustrasi hasil
+  cek/prediksi, banner edukasi & promosi) ke `frontend/public/`, dioptimasi
+  & dirender lewat `next/image`.
+
+Task berikutnya: mulai dari task pertama fitur **Hubungkan Aplikasi ke
+Server** ("Buat layout utama aplikasi dengan data tiruan") — ini checkpoint
+(layer berubah dari backend ke frontend), menunggu konfirmasi user sebelum
+mulai.
 
 ## Catatan implementasi penting
 
