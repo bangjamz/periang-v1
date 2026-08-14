@@ -1,3 +1,4 @@
+import { apiFetch, ApiError } from "./api-client";
 import { FaktorRisiko } from "./faktor-risiko-store";
 import { StatusGizi } from "./dummy-data";
 
@@ -114,4 +115,46 @@ export function hitungPrediksiRisiko(
     rekomendasiUmum: REKOMENDASI_UMUM[tingkatRisiko],
     rekomendasi,
   };
+}
+
+type PrediksiRisikoApi = {
+  skor: number;
+  skor_maksimal: number;
+  tingkat_risiko: TingkatRisiko;
+  faktor_kontribusi: string[];
+  rekomendasi_umum: string;
+  rekomendasi: string[];
+};
+
+/**
+ * Ambil hasil prediksi risiko dari server (dihitung backend dari faktor
+ * risiko & status gizi terakhir balita — lihat PrediksiRisikoService).
+ */
+export async function ambilPrediksiRisiko(
+  balitaId: string,
+): Promise<
+  { berhasil: true; hasil: HasilPrediksi } | { berhasil: false; pesan: string }
+> {
+  try {
+    const res = await apiFetch<PrediksiRisikoApi>(
+      `/balita/${balitaId}/prediksi`,
+    );
+    return {
+      berhasil: true,
+      hasil: {
+        skor: res.skor,
+        skorMaksimal: res.skor_maksimal,
+        tingkatRisiko: res.tingkat_risiko,
+        faktorKontribusi: res.faktor_kontribusi,
+        rekomendasiUmum: res.rekomendasi_umum,
+        rekomendasi: res.rekomendasi,
+      },
+    };
+  } catch (error) {
+    const pesan =
+      error instanceof ApiError
+        ? error.message
+        : "Tidak bisa terhubung ke server.";
+    return { berhasil: false, pesan };
+  }
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -20,6 +21,7 @@ import {
   Sanitasi,
   simpanFaktorRisiko,
   StatusYaTidak,
+  subscribeFaktorRisiko,
 } from "@/lib/faktor-risiko-store";
 
 const LABEL_RIWAYAT_LAHIR: Record<RiwayatLahir, string> = {
@@ -67,7 +69,11 @@ export function FaktorRisikoForm({
   balitaId: string;
   onSaved?: (data: FaktorRisiko) => void;
 }) {
-  const existing = getFaktorRisikoByBalita(balitaId);
+  const existing = useSyncExternalStore(
+    subscribeFaktorRisiko,
+    () => getFaktorRisikoByBalita(balitaId),
+    () => null,
+  );
 
   const [riwayatLahir, setRiwayatLahir] = useState<RiwayatLahir | "">(
     existing?.riwayatLahir ?? "",
@@ -85,6 +91,20 @@ export function FaktorRisikoForm({
     PendapatanKeluarga | ""
   >(existing?.pendapatanKeluarga ?? "");
   const [tersimpan, setTersimpan] = useState(false);
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [pesanGagal, setPesanGagal] = useState("");
+
+  // Data faktor risiko dimuat async dari server; sinkronkan form saat siap.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!existing) return;
+    setRiwayatLahir(existing.riwayatLahir);
+    setImunisasi(existing.imunisasi);
+    setAsiEksklusif(existing.asiEksklusif);
+    setSanitasi(existing.sanitasi);
+    setPendapatanKeluarga(existing.pendapatanKeluarga ?? "");
+  }, [existing]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const valid =
     riwayatLahir !== "" &&
@@ -92,11 +112,12 @@ export function FaktorRisikoForm({
     asiEksklusif !== "" &&
     sanitasi !== "";
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!valid) return;
 
-    const data = simpanFaktorRisiko({
+    setMenyimpan(true);
+    const hasil = await simpanFaktorRisiko({
       balitaId,
       riwayatLahir: riwayatLahir as RiwayatLahir,
       imunisasi: imunisasi as StatusYaTidak,
@@ -104,9 +125,15 @@ export function FaktorRisikoForm({
       sanitasi: sanitasi as Sanitasi,
       pendapatanKeluarga: pendapatanKeluarga || undefined,
     });
+    setMenyimpan(false);
+
+    if (!hasil.berhasil) {
+      setPesanGagal(hasil.pesan);
+      return;
+    }
 
     setTersimpan(true);
-    onSaved?.(data);
+    onSaved?.(hasil.data);
   }
 
   return (
@@ -245,14 +272,20 @@ export function FaktorRisikoForm({
         </div>
       </div>
 
+      <ErrorMessage>{pesanGagal}</ErrorMessage>
+
       <Button
         type="submit"
-        disabled={!valid}
+        disabled={!valid || menyimpan}
         variant={tersimpan ? "secondary" : "default"}
         className={!tersimpan ? "bg-violet-500 hover:bg-violet-600" : ""}
       >
         <FontAwesomeIcon icon={tersimpan ? faCheck : faFloppyDisk} />
-        {tersimpan ? "Tersimpan" : "Simpan Faktor Risiko"}
+        {tersimpan
+          ? "Tersimpan"
+          : menyimpan
+            ? "Menyimpan..."
+            : "Simpan Faktor Risiko"}
       </Button>
     </form>
   );

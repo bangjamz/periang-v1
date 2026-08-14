@@ -7,7 +7,10 @@ import {
   getAuthSnapshot,
   subscribeAuth,
 } from "@/lib/auth-store";
+import { muatBalita } from "@/lib/balita-store";
 import { HALAMAN_PUBLIK } from "@/lib/halaman-publik";
+import { muatKader } from "@/lib/kader-store";
+import { muatRiwayat } from "@/lib/riwayat-store";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -28,6 +31,11 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
       router.replace("/masuk");
     } else if (halamanPublik && statusTerkini) {
       router.replace("/");
+    } else if (statusTerkini) {
+      // Segarkan profil kader, daftar balita & riwayat dari server (cache lokal bisa basi).
+      void muatKader();
+      void muatBalita();
+      void muatRiwayat();
     }
   }, [pathname, halamanPublik, isLoggedIn, router]);
 

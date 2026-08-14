@@ -1,27 +1,60 @@
-import { Balita, DUMMY_BALITA } from "./dummy-data";
+import { apiFetch, ApiError } from "./api-client";
+import { Balita, JenisKelamin } from "./dummy-data";
 
-const STORAGE_KEY = "periang:balita";
+const EMPTY: Balita[] = [];
 
-function bacaSemua(): Balita[] {
-  if (typeof window === "undefined") return DUMMY_BALITA;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Balita[]) : DUMMY_BALITA;
-  } catch {
-    return DUMMY_BALITA;
-  }
+type BalitaApi = {
+  id: number;
+  nama: string;
+  jenis_kelamin: JenisKelamin;
+  tanggal_lahir: string;
+  posyandu: string;
+  berat_lahir: string | number | null;
+  tinggi_lahir: string | number | null;
+  alamat: string | null;
+};
+
+function dariApi(row: BalitaApi): Balita {
+  return {
+    id: String(row.id),
+    nama: row.nama,
+    jenisKelamin: row.jenis_kelamin,
+    // Laravel serialize cast 'date' sebagai ISO datetime penuh; potong ke YYYY-MM-DD.
+    tanggalLahir: row.tanggal_lahir.slice(0, 10),
+    posyandu: row.posyandu,
+    beratLahirKg: row.berat_lahir != null ? Number(row.berat_lahir) : undefined,
+    tinggiLahirCm:
+      row.tinggi_lahir != null ? Number(row.tinggi_lahir) : undefined,
+    alamat: row.alamat ?? undefined,
+  };
 }
 
-function tulisSemua(data: Balita[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+function keApi(data: Omit<Balita, "id">) {
+  return {
+    nama: data.nama,
+    jenis_kelamin: data.jenisKelamin,
+    tanggal_lahir: data.tanggalLahir,
+    posyandu: data.posyandu,
+    berat_lahir: data.beratLahirKg ?? null,
+    tinggi_lahir: data.tinggiLahirCm ?? null,
+    alamat: data.alamat ?? null,
+  };
+}
+
+type HasilAksi = { berhasil: true } | { berhasil: false; pesan: string };
+
+function pesanError(error: unknown): string {
+  return error instanceof ApiError
+    ? error.message
+    : "Tidak bisa terhubung ke server.";
 }
 
 const listeners = new Set<() => void>();
-let cache: Balita[] = bacaSemua();
+let cache: Balita[] = EMPTY;
+let memuat = true;
 
-function segarkanCache() {
-  cache = bacaSemua();
+function segarkanCache(baru: Balita[]) {
+  cache = baru;
   listeners.forEach((listener) => listener());
 }
 
@@ -35,27 +68,67 @@ export function getBalitaSnapshot(): Balita[] {
 }
 
 export function getBalitaServerSnapshot(): Balita[] {
-  return DUMMY_BALITA;
+  return EMPTY;
 }
 
-export function tambahBalita(data: Omit<Balita, "id">): Balita {
-  const baru: Balita = {
-    ...data,
-    id: `balita-${crypto.randomUUID()}`,
-  };
-
-  tulisSemua([...bacaSemua(), baru]);
-  segarkanCache();
-
-  return baru;
+export function isBalitaMemuat(): boolean {
+  return memuat;
 }
 
-export function perbaruiBalita(id: string, data: Omit<Balita, "id">): void {
-  tulisSemua(bacaSemua().map((b) => (b.id === id ? { ...data, id } : b)));
-  segarkanCache();
+/** Ambil ulang daftar balita dari server (dipanggil sekali saat aplikasi dibuka). */
+export async function muatBalita(): Promise<void> {
+  try {
+    const rows = await apiFetch<BalitaApi[]>("/balita");
+    cache = rows.map(dariApi);
+  } catch {
+    // Biarkan cache lokal apa adanya kalau gagal memuat.
+  } finally {
+    memuat = false;
+    listeners.forEach((listener) => listener());
+  }
 }
 
-export function hapusBalita(id: string): void {
-  tulisSemua(bacaSemua().filter((b) => b.id !== id));
-  segarkanCache();
+export async function tambahBalita(
+  data: Omit<Balita, "id">,
+): Promise<
+  { berhasil: true; balita: Balita } | { berhasil: false; pesan: string }
+> {
+  try {
+    const row = await apiFetch<BalitaApi>("/balita", {
+      method: "POST",
+      body: keApi(data),
+    });
+    const baru = dariApi(row);
+    segarkanCache([...cache, baru]);
+    return { berhasil: true, balita: baru };
+  } catch (error) {
+    return { berhasil: false, pesan: pesanError(error) };
+  }
+}
+
+export async function perbaruiBalita(
+  id: string,
+  data: Omit<Balita, "id">,
+): Promise<HasilAksi> {
+  try {
+    const row = await apiFetch<BalitaApi>(`/balita/${id}`, {
+      method: "PUT",
+      body: keApi(data),
+    });
+    const baru = dariApi(row);
+    segarkanCache(cache.map((b) => (b.id === id ? baru : b)));
+    return { berhasil: true };
+  } catch (error) {
+    return { berhasil: false, pesan: pesanError(error) };
+  }
+}
+
+export async function hapusBalita(id: string): Promise<HasilAksi> {
+  try {
+    await apiFetch(`/balita/${id}`, { method: "DELETE" });
+    segarkanCache(cache.filter((b) => b.id !== id));
+    return { berhasil: true };
+  } catch (error) {
+    return { berhasil: false, pesan: pesanError(error) };
+  }
 }

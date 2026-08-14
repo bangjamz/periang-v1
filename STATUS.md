@@ -8,6 +8,29 @@ NgodingPakeAI. Setelah reconnect, sinkronkan checklist ini dengan hasil
 - **Repo**: https://github.com/bangjamz/periang-v1
 - **Tech stack**: Next.js (frontend) · Laravel + PostgreSQL (backend) · deploy VPS
 
+## ⭐ Upcoming — Model Prediksi Risiko (champion ML algorithm)
+
+**Belum ditambahkan ke server NgodingPakeAI** — dicatat di sini dulu atas
+permintaan user (2026-08-14) supaya tidak hilang, sambil 36 task Fase 4
+(polish UI + wiring) berjalan. **Ini prioritas penting user berikutnya.**
+
+- **Kondisi saat ini**: `backend/app/Services/PrediksiRisikoService.php`
+  masih **rule-based placeholder** (skor berbobot manual per faktor risiko,
+  bukan model ML). Komentar di kode sudah menandainya sebagai pengganti
+  sementara.
+- **Rencana sesuai PRD v9** (bagian Architecture): backend akan memanggil
+  layanan AI/Prediksi eksternal lewat **InsForge Model Gateway** untuk
+  menghitung tingkat risiko gizi kurang dari faktor risiko balita.
+- **Titik integrasi**: `PrediksiRisikoService::hitung()` diganti/dibungkus
+  agar memanggil model champion user (lewat InsForge Model Gateway atau
+  gateway lain) alih-alih hitung skor manual. Kontrak endpoint
+  `GET /api/balita/{id}/prediksi` (response: skor, tingkat_risiko,
+  faktor_kontribusi, rekomendasi_umum, rekomendasi) sebaiknya dipertahankan
+  supaya frontend tidak perlu berubah.
+- **Next step**: setelah 36 task Fase 4 selesai, susun task/fitur baru di
+  server NgodingPakeAI untuk fitur ini (user akan minta bantuan prompt-nya
+  lagi seperti sebelumnya).
+
 ## Setup lokal
 
 ### Frontend
@@ -196,10 +219,43 @@ task di 4 fitur, semua status `todo`:
   cek/prediksi, banner edukasi & promosi) ke `frontend/public/`, dioptimasi
   & dirender lewat `next/image`.
 
-Task berikutnya: mulai dari task pertama fitur **Hubungkan Aplikasi ke
-Server** ("Buat layout utama aplikasi dengan data tiruan") — ini checkpoint
-(layer berubah dari backend ke frontend), menunggu konfirmasi user sebelum
-mulai.
+**Hubungkan Aplikasi ke Server — SELESAI (8/8 task):**
+- [x] Layout utama: `api-client.ts` (fetch wrapper + token Sanctum +
+      auto-logout saat 401), `auth-store.ts`/`kader-store.ts` diganti dari
+      localStorage ke panggilan API asli
+- [x] Halaman masuk/keluar dengan autentikasi asli (`POST /api/login`,
+      `/api/logout`)
+- [x] Daftar balita & pencarian dari `GET /api/balita?q=` (`balita-store.ts`
+      full CRUD ke API)
+- [x] Form tambah/ubah balita tersambung ke API (sudah tercakup task
+      sebelumnya)
+- [x] Detail riwayat pemeriksaan: `riwayat-store.ts` full CRUD ke
+      `/api/pemeriksaan`; halaman Cek Status Gizi kini hitung+simpan sekali
+      jalan ke backend (Gomez/Waterlow asli, bukan placeholder lokal lagi)
+- [x] Form pemeriksaan & prediksi: `faktor-risiko-store.ts` ke
+      `/api/balita/{id}/faktor-risiko`; `prediksi-risiko.ts` dapat fungsi
+      `ambilPrediksiRisiko()` yang panggil `/api/balita/{id}/prediksi`
+      (backend asli, bukan hitung lokal lagi)
+- [x] Halaman profil & ganti sandi (sudah tercakup task layout utama)
+- [x] Komponen `Spinner`/`IndikatorMemuat` & `ErrorMessage` reusable,
+      dipakai di semua form/dialog yang manggil API + indikator memuat di
+      halaman Balita & Riwayat
+
+**Bug ditemukan & diperbaiki selama wiring**: Laravel serialize cast
+`'date'` sebagai ISO datetime penuh (`"2024-03-12T00:00:00.000000Z"`), bukan
+`"Y-m-d"` — field `tanggalLahir`/`tanggalCek` di frontend dipotong ke 10
+karakter pertama (`.slice(0, 10)`) di `balita-store.ts` & `riwayat-store.ts`
+supaya cocok dengan `<input type="date">`. Kalau ada field tanggal baru dari
+API, ingat pola ini.
+
+**Server backend dev**: `php artisan serve` default port 8000 kadang bentrok
+dengan project lain di mesin yang sama — kalau itu terjadi, jalankan di port
+lain (mis. `--port=8010`) dan sesuaikan `frontend/.env.local`
+(`NEXT_PUBLIC_API_URL`).
+
+Task berikutnya: fitur **Perbaiki Menu Bawah di HP** (masih layer frontend,
+fase 3 — bukan checkpoint, lanjut otomatis sesuai arahan user "jalankan
+semua").
 
 ## Catatan implementasi penting
 

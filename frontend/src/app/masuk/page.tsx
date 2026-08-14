@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { masuk } from "@/lib/auth-store";
@@ -60,14 +61,14 @@ export default function MasukPage() {
     setPesanGagal("");
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errorBaru = validasi(form);
     setError(errorBaru);
     if (Object.keys(errorBaru).length > 0) return;
 
     setMemproses(true);
-    const hasil = masuk(form.email, form.kataSandi);
+    const hasil = await masuk(form.email, form.kataSandi);
     setMemproses(false);
 
     if (!hasil.berhasil) {
@@ -139,11 +140,7 @@ export default function MasukPage() {
               </Link>
             </div>
 
-            {pesanGagal && (
-              <p className="rounded-lg bg-rose-50 p-2.5 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                {pesanGagal}
-              </p>
-            )}
+            <ErrorMessage>{pesanGagal}</ErrorMessage>
 
             <Button
               type="submit"

@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { IndikatorMemuat } from "@/components/ui/spinner";
 import { Balita, STATUS_GIZI_LABEL, StatusGizi } from "@/lib/dummy-data";
 import {
   getBalitaServerSnapshot,
@@ -30,6 +31,7 @@ import {
   getRiwayatServerSnapshot,
   getRiwayatSnapshot,
   hapusRiwayatCek,
+  isRiwayatMemuat,
   subscribeRiwayat,
   type RiwayatCek,
 } from "@/lib/riwayat-store";
@@ -83,6 +85,11 @@ export default function RiwayatPage() {
     getBalitaSnapshot,
     getBalitaServerSnapshot,
   );
+  const memuat = useSyncExternalStore(
+    subscribeRiwayat,
+    isRiwayatMemuat,
+    () => true,
+  );
   const [query, setQuery] = useState("");
 
   const grup = useMemo(() => {
@@ -110,7 +117,7 @@ export default function RiwayatPage() {
   }, [riwayat, balitaList, query]);
 
   function handleHapus(id: string) {
-    hapusRiwayatCek(id);
+    void hapusRiwayatCek(id);
   }
 
   return (
@@ -145,7 +152,11 @@ export default function RiwayatPage() {
           />
         </div>
 
-        {grup.length === 0 && (
+        {memuat && grup.length === 0 && (
+          <IndikatorMemuat label="Memuat riwayat pemeriksaan..." />
+        )}
+
+        {!memuat && grup.length === 0 && (
           <Card className="border-dashed shadow-none">
             <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
               <FontAwesomeIcon

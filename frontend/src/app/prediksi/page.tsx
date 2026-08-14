@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleCheck,
@@ -33,14 +33,14 @@ import {
   getFaktorRisikoByBalita,
   getFaktorRisikoServerSnapshot,
   getFaktorRisikoSnapshot,
+  muatFaktorRisiko,
   subscribeFaktorRisiko,
 } from "@/lib/faktor-risiko-store";
 import {
-  getRiwayatServerSnapshot,
-  getRiwayatSnapshot,
-  subscribeRiwayat,
-} from "@/lib/riwayat-store";
-import { hitungPrediksiRisiko, TingkatRisiko } from "@/lib/prediksi-risiko";
+  ambilPrediksiRisiko,
+  HasilPrediksi,
+  TingkatRisiko,
+} from "@/lib/prediksi-risiko";
 import { cn } from "@/lib/utils";
 
 const STATUS_RISIKO: Record<
@@ -80,12 +80,11 @@ export default function PrediksiPage() {
     getFaktorRisikoSnapshot,
     getFaktorRisikoServerSnapshot,
   );
-  const riwayat = useSyncExternalStore(
-    subscribeRiwayat,
-    getRiwayatSnapshot,
-    getRiwayatServerSnapshot,
-  );
   const [balitaId, setBalitaId] = useState("");
+  const [hasilPrediksi, setHasilPrediksi] = useState<HasilPrediksi | null>(
+    null,
+  );
+  const [pesanGagalPrediksi, setPesanGagalPrediksi] = useState("");
 
   const balitaTerpilih = useMemo(
     () => balitaList.find((b) => b.id === balitaId) ?? null,
@@ -100,17 +99,34 @@ export default function PrediksiPage() {
     );
   }, [semuaFaktorRisiko, balitaId]);
 
-  const statusGiziTerakhir = useMemo(() => {
-    const punyaBalita = riwayat
-      .filter((r) => r.balitaId === balitaId)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return punyaBalita[0]?.status ?? null;
-  }, [riwayat, balitaId]);
+  useEffect(() => {
+    if (balitaId) void muatFaktorRisiko(balitaId);
+  }, [balitaId]);
 
-  const hasilPrediksi = useMemo(() => {
-    if (!faktorRisiko) return null;
-    return hitungPrediksiRisiko(faktorRisiko, statusGiziTerakhir);
-  }, [faktorRisiko, statusGiziTerakhir]);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!faktorRisiko) {
+      setHasilPrediksi(null);
+      return;
+    }
+
+    let batal = false;
+    setPesanGagalPrediksi("");
+    void ambilPrediksiRisiko(faktorRisiko.balitaId).then((hasil) => {
+      if (batal) return;
+      if (!hasil.berhasil) {
+        setPesanGagalPrediksi(hasil.pesan);
+        setHasilPrediksi(null);
+        return;
+      }
+      setHasilPrediksi(hasil.hasil);
+    });
+
+    return () => {
+      batal = true;
+    };
+  }, [faktorRisiko]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <div className="flex flex-1 flex-col">
@@ -269,9 +285,11 @@ export default function PrediksiPage() {
         ) : (
           <Card className="hidden border-dashed shadow-none lg:flex lg:min-h-[240px] lg:items-center lg:justify-center">
             <p className="px-6 text-center text-sm text-zinc-400">
-              {balitaTerpilih
-                ? "Isi & simpan faktor risiko untuk melihat hasil prediksi."
-                : "Hasil prediksi risiko akan muncul di sini setelah faktor risiko diisi."}
+              {pesanGagalPrediksi
+                ? pesanGagalPrediksi
+                : balitaTerpilih
+                  ? "Isi & simpan faktor risiko untuk melihat hasil prediksi."
+                  : "Hasil prediksi risiko akan muncul di sini setelah faktor risiko diisi."}
             </p>
           </Card>
         )}

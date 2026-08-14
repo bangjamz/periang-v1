@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resetKataSandi } from "@/lib/auth-store";
@@ -68,14 +69,17 @@ function ResetKataSandiContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   const [form, setForm] = useState<FormState>(KOSONG);
   const [error, setError] = useState<Partial<Record<keyof FormState, string>>>(
     {},
   );
+  const [pesanGagal, setPesanGagal] = useState("");
+  const [memproses, setMemproses] = useState(false);
   const [berhasil, setBerhasil] = useState(false);
 
-  if (!token) {
+  if (!token || !email) {
     return (
       <Wadah>
         <Card className="w-full max-w-sm border-zinc-100 shadow-sm dark:border-zinc-800">
@@ -104,13 +108,23 @@ function ResetKataSandiContent() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!token || !email) return;
+
     const errorBaru = validasi(form);
     setError(errorBaru);
     if (Object.keys(errorBaru).length > 0) return;
 
-    resetKataSandi(form.kataSandiBaru);
+    setMemproses(true);
+    const hasil = await resetKataSandi(token, email, form.kataSandiBaru);
+    setMemproses(false);
+
+    if (!hasil.berhasil) {
+      setPesanGagal(hasil.pesan);
+      return;
+    }
+
     setBerhasil(true);
   }
 
@@ -176,9 +190,15 @@ function ResetKataSandiContent() {
                 )}
               </div>
 
-              <Button type="submit" className="bg-sky-500 hover:bg-sky-600">
+              <ErrorMessage>{pesanGagal}</ErrorMessage>
+
+              <Button
+                type="submit"
+                disabled={memproses}
+                className="bg-sky-500 hover:bg-sky-600"
+              >
                 <FontAwesomeIcon icon={faFloppyDisk} />
-                Simpan Kata Sandi Baru
+                {memproses ? "Menyimpan..." : "Simpan Kata Sandi Baru"}
               </Button>
 
               <Link

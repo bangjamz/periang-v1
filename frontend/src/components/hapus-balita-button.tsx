@@ -16,11 +16,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Balita } from "@/lib/dummy-data";
 import { hapusBalita } from "@/lib/balita-store";
-import { hapusRiwayatByBalita } from "@/lib/riwayat-store";
+import { hapusRiwayatByBalitaLokal } from "@/lib/riwayat-store";
 
-function handleHapus(balitaId: string) {
-  hapusBalita(balitaId);
-  hapusRiwayatByBalita(balitaId);
+async function handleHapus(balitaId: string) {
+  const hasil = await hapusBalita(balitaId);
+  if (hasil.berhasil) {
+    // Server sudah cascade-hapus riwayatnya; sinkronkan cache lokal.
+    hapusRiwayatByBalitaLokal(balitaId);
+  }
 }
 
 export function HapusBalitaButton({ balita }: { balita: Balita }) {

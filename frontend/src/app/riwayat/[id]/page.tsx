@@ -144,8 +144,8 @@ export default function DetailRiwayatPage({
     entry.tinggiCm,
   );
 
-  function handleHapus() {
-    hapusRiwayatCek(id);
+  async function handleHapus() {
+    await hapusRiwayatCek(id);
     router.push("/riwayat");
   }
 

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { lupaKataSandi } from "@/lib/auth-store";
 
 function validasiEmail(email: string): string | undefined {
   if (email.trim() === "") {
@@ -34,14 +35,17 @@ export default function LupaKataSandiPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [terkirim, setTerkirim] = useState(false);
+  const [memproses, setMemproses] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errorBaru = validasiEmail(email);
     setError(errorBaru);
     if (errorBaru) return;
 
-    // Belum tersambung ke backend/pengirim email — simulasi tiruan saja.
+    setMemproses(true);
+    await lupaKataSandi(email);
+    setMemproses(false);
     setTerkirim(true);
   }
 
@@ -77,12 +81,6 @@ export default function LupaKataSandiPage() {
                 Jika <strong>{email}</strong> terdaftar, tautan atur ulang kata
                 sandi telah dikirim. Silakan cek email Anda.
               </p>
-              <Link
-                href="/reset-kata-sandi?token=demo"
-                className="text-xs text-sky-600 hover:underline dark:text-sky-400"
-              >
-                (Demo) Buka tautan reset kata sandi
-              </Link>
               <Button
                 variant="secondary"
                 render={<Link href="/masuk" />}
@@ -111,9 +109,13 @@ export default function LupaKataSandiPage() {
                 {error && <p className="text-xs text-rose-600">{error}</p>}
               </div>
 
-              <Button type="submit" className="bg-sky-500 hover:bg-sky-600">
+              <Button
+                type="submit"
+                disabled={memproses}
+                className="bg-sky-500 hover:bg-sky-600"
+              >
                 <FontAwesomeIcon icon={faPaperPlane} />
-                Kirim Tautan Reset
+                {memproses ? "Mengirim..." : "Kirim Tautan Reset"}
               </Button>
 
               <Link

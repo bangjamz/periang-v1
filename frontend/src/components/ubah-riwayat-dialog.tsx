@@ -12,12 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Balita } from "@/lib/dummy-data";
-import { analisisStatusGizi } from "@/lib/hitung-status-gizi";
 import { perbaruiRiwayatCek, type RiwayatCek } from "@/lib/riwayat-store";
-import { hitungUmurBulan } from "@/lib/umur";
 
 function hariIni() {
   return new Date().toISOString().slice(0, 10);
@@ -79,6 +78,8 @@ export function UbahRiwayatDialog({
   const [error, setError] = useState<Partial<Record<keyof FormState, string>>>(
     {},
   );
+  const [pesanGagal, setPesanGagal] = useState("");
+  const [menyimpan, setMenyimpan] = useState(false);
 
   function handleChange<K extends keyof FormState>(
     key: K,
@@ -97,34 +98,30 @@ export function UbahRiwayatDialog({
         catatan: entry.catatan ?? "",
       });
       setError({});
+      setPesanGagal("");
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const hasilValidasi = validasi(form, balita);
     setError(hasilValidasi);
     if (Object.keys(hasilValidasi).length > 0) return;
 
-    const umurBulan = balita
-      ? hitungUmurBulan(balita.tanggalLahir, new Date(form.tanggalCek))
-      : entry.umurBulan;
-
-    const analisis = analisisStatusGizi(
-      umurBulan,
-      Number(form.beratKg),
-      Number(form.tinggiCm),
-    );
-
-    perbaruiRiwayatCek(entry.id, {
+    setMenyimpan(true);
+    const hasil = await perbaruiRiwayatCek(entry.id, {
       tanggalCek: form.tanggalCek,
-      umurBulan,
       beratKg: Number(form.beratKg),
       tinggiCm: Number(form.tinggiCm),
-      status: analisis.status,
       catatan: form.catatan.trim() === "" ? undefined : form.catatan.trim(),
     });
+    setMenyimpan(false);
+
+    if (!hasil.berhasil) {
+      setPesanGagal(hasil.pesan);
+      return;
+    }
 
     setOpen(false);
   }
@@ -201,9 +198,15 @@ export function UbahRiwayatDialog({
             Status gizi akan dihitung ulang otomatis dari data baru ini.
           </p>
 
+          <ErrorMessage>{pesanGagal}</ErrorMessage>
+
           <DialogFooter className="-mx-4 -mb-4 sm:mx-0 sm:mb-0">
-            <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
-              Simpan Perubahan
+            <Button
+              type="submit"
+              disabled={menyimpan}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              {menyimpan ? "Menyimpan..." : "Simpan Perubahan"}
             </Button>
           </DialogFooter>
         </form>

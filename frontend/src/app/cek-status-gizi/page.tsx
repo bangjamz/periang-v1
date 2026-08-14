@@ -25,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -102,6 +103,8 @@ function CekStatusGiziContent() {
   const [tinggiCm, setTinggiCm] = useState("");
   const [hasil, setHasil] = useState<HasilCek | null>(null);
   const [tersimpan, setTersimpan] = useState(false);
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [pesanGagal, setPesanGagal] = useState("");
   const [versiRiwayat, setVersiRiwayat] = useState(0);
 
   const riwayatBalita = useMemo(() => {
@@ -140,17 +143,38 @@ function CekStatusGiziContent() {
       tanggalCek,
     });
     setTersimpan(false);
+    setPesanGagal("");
   }
 
-  function handleSimpan() {
+  async function handleSimpan() {
     if (!hasil || tersimpan) return;
-    simpanRiwayatCek({
+
+    setMenyimpan(true);
+    const respons = await simpanRiwayatCek({
       balitaId,
       tanggalCek: hasil.tanggalCek,
-      umurBulan: hasil.umurBulan,
       beratKg: hasil.beratKg,
       tinggiCm: hasil.tinggiCm,
-      status: hasil.status,
+    });
+    setMenyimpan(false);
+
+    if (!respons.berhasil) {
+      setPesanGagal(respons.pesan);
+      return;
+    }
+
+    // Selaraskan tampilan dengan hasil resmi dari server (Gomez/Waterlow),
+    // yang bisa berbeda dari pratinjau lokal.
+    setHasil({
+      status: respons.hasil.status,
+      beratKg: respons.hasil.beratKg,
+      tinggiCm: respons.hasil.tinggiCm,
+      beratIdealKg: respons.hasil.beratMedianKg,
+      tinggiIdealCm: respons.hasil.tinggiMedianCm,
+      rasioBerat: respons.hasil.rasioBerat,
+      rasioTinggi: respons.hasil.rasioTinggi,
+      umurBulan: respons.hasil.umurBulan,
+      tanggalCek: respons.hasil.tanggalCek,
     });
     setVersiRiwayat((v) => v + 1);
     setTersimpan(true);
@@ -188,7 +212,7 @@ function CekStatusGiziContent() {
               Data Pemeriksaan
             </CardTitle>
             <CardDescription>
-              Data balita masih berupa data contoh (dummy).
+              Status gizi dihitung otomatis mengikuti standar WHO.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -364,17 +388,22 @@ function CekStatusGiziContent() {
                 <p>{STATUS_GIZI_CATATAN[hasil.status]}</p>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-3">
+              <ErrorMessage className="w-full">{pesanGagal}</ErrorMessage>
               <Button
                 variant={tersimpan ? "secondary" : "default"}
                 className={cn(
                   "w-full",
                   !tersimpan && "bg-emerald-500 hover:bg-emerald-600",
                 )}
-                disabled={tersimpan}
+                disabled={tersimpan || menyimpan}
                 onClick={handleSimpan}
               >
-                {tersimpan ? "Tersimpan ke Riwayat" : "Simpan Hasil Cek"}
+                {tersimpan
+                  ? "Tersimpan ke Riwayat"
+                  : menyimpan
+                    ? "Menyimpan..."
+                    : "Simpan Hasil Cek"}
               </Button>
             </CardFooter>
           </Card>
@@ -398,8 +427,7 @@ function CekStatusGiziContent() {
                 Riwayat Tersimpan · {balitaTerpilih.nama}
               </CardTitle>
               <CardDescription>
-                Tersimpan sementara di perangkat ini ({riwayatBalita.length}{" "}
-                pemeriksaan).
+                Tersimpan di server ({riwayatBalita.length} pemeriksaan).
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">

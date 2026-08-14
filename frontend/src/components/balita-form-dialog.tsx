@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -129,6 +130,8 @@ export function BalitaFormDialog({ mode, balita }: BalitaFormDialogProps) {
   const [error, setError] = useState<Partial<Record<keyof FormState, string>>>(
     {},
   );
+  const [pesanGagal, setPesanGagal] = useState("");
+  const [menyimpan, setMenyimpan] = useState(false);
 
   function handleChange<K extends keyof FormState>(
     key: K,
@@ -142,10 +145,11 @@ export function BalitaFormDialog({ mode, balita }: BalitaFormDialogProps) {
     if (next) {
       setForm(mode === "ubah" ? dariBalita(balita) : KOSONG);
       setError({});
+      setPesanGagal("");
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const hasilValidasi = validasi(form);
@@ -164,10 +168,16 @@ export function BalitaFormDialog({ mode, balita }: BalitaFormDialogProps) {
       alamat: form.alamat.trim() === "" ? undefined : form.alamat.trim(),
     };
 
-    if (mode === "ubah") {
-      perbaruiBalita(balita.id, data);
-    } else {
-      tambahBalita(data);
+    setMenyimpan(true);
+    const hasil =
+      mode === "ubah"
+        ? await perbaruiBalita(balita.id, data)
+        : await tambahBalita(data);
+    setMenyimpan(false);
+
+    if (!hasil.berhasil) {
+      setPesanGagal(hasil.pesan);
+      return;
     }
 
     setOpen(false);
@@ -316,9 +326,15 @@ export function BalitaFormDialog({ mode, balita }: BalitaFormDialogProps) {
             />
           </div>
 
+          <ErrorMessage>{pesanGagal}</ErrorMessage>
+
           <DialogFooter className="-mx-4 -mb-4 sm:mx-0 sm:mb-0">
-            <Button type="submit" className="bg-pink-500 hover:bg-pink-600">
-              {LABEL_SIMPAN[mode]}
+            <Button
+              type="submit"
+              disabled={menyimpan}
+              className="bg-pink-500 hover:bg-pink-600"
+            >
+              {menyimpan ? "Menyimpan..." : LABEL_SIMPAN[mode]}
             </Button>
           </DialogFooter>
         </form>

@@ -23,10 +23,12 @@ import {
 } from "@/components/ui/select";
 import { BalitaFormDialog } from "@/components/balita-form-dialog";
 import { HapusBalitaButton } from "@/components/hapus-balita-button";
+import { IndikatorMemuat } from "@/components/ui/spinner";
 import { Balita, JenisKelamin } from "@/lib/dummy-data";
 import {
   getBalitaServerSnapshot,
   getBalitaSnapshot,
+  isBalitaMemuat,
   subscribeBalita,
 } from "@/lib/balita-store";
 import { formatUmur, hitungUmurBulan } from "@/lib/umur";
@@ -42,6 +44,11 @@ export default function BalitaPage() {
     subscribeBalita,
     getBalitaSnapshot,
     getBalitaServerSnapshot,
+  );
+  const memuat = useSyncExternalStore(
+    subscribeBalita,
+    isBalitaMemuat,
+    () => true,
   );
   const [query, setQuery] = useState("");
   const [jenisKelamin, setJenisKelamin] = useState<JenisKelamin | "">("");
@@ -151,7 +158,11 @@ export default function BalitaPage() {
           </p>
         </div>
 
-        {hasil.length === 0 && (
+        {memuat && hasil.length === 0 && (
+          <IndikatorMemuat label="Memuat data balita..." />
+        )}
+
+        {!memuat && hasil.length === 0 && (
           <Card className="border-dashed shadow-none">
             <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
               <FontAwesomeIcon icon={faBaby} className="size-6 text-zinc-300" />

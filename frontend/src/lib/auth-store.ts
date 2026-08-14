@@ -1,27 +1,27 @@
-import { DUMMY_KADER } from "./kader-data";
-
-const STORAGE_KEY = "periang:auth";
-const STORAGE_KEY_KATA_SANDI = "periang:kata-sandi";
-
-// Kredensial tiruan; belum tersambung ke backend (Sanctum) — menyusul saat wiring API.
-const KATA_SANDI_AWAL = "posyandu123";
-
-function bacaStatus(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(STORAGE_KEY) === "1";
-}
-
-function bacaKataSandi(): string {
-  if (typeof window === "undefined") return KATA_SANDI_AWAL;
-  return window.localStorage.getItem(STORAGE_KEY_KATA_SANDI) ?? KATA_SANDI_AWAL;
-}
+import {
+  apiFetch,
+  ApiError,
+  clearToken,
+  EVENT_TIDAK_SAH,
+  getToken,
+  setToken,
+} from "./api-client";
+import { hapusKaderLokal, simpanKaderDariLogin } from "./kader-store";
 
 const listeners = new Set<() => void>();
-let cache = bacaStatus();
+let cache = getToken() !== null;
 
 function segarkanCache() {
-  cache = bacaStatus();
+  cache = getToken() !== null;
   listeners.forEach((listener) => listener());
+}
+
+if (typeof window !== "undefined") {
+  // Token ditolak server (kedaluwarsa/dicabut) → sinkronkan status login lokal.
+  window.addEventListener(EVENT_TIDAK_SAH, () => {
+    hapusKaderLokal();
+    segarkanCache();
+  });
 }
 
 export function subscribeAuth(listener: () => void): () => void {
@@ -37,43 +37,114 @@ export function getAuthServerSnapshot(): boolean {
   return false;
 }
 
-export function masuk(
+type LoginResponse = {
+  user: { id: number; name: string; email: string; posyandu: string };
+  token: string;
+};
+
+export async function masuk(
   email: string,
   kataSandi: string,
-): { berhasil: true } | { berhasil: false; pesan: string } {
-  if (email.trim().toLowerCase() !== DUMMY_KADER.email.toLowerCase()) {
-    return { berhasil: false, pesan: "Email atau kata sandi salah." };
-  }
-  if (kataSandi !== bacaKataSandi()) {
-    return { berhasil: false, pesan: "Email atau kata sandi salah." };
-  }
+): Promise<{ berhasil: true } | { berhasil: false; pesan: string }> {
+  try {
+    const data = await apiFetch<LoginResponse>("/login", {
+      method: "POST",
+      body: { email, password: kataSandi },
+    });
 
-  window.localStorage.setItem(STORAGE_KEY, "1");
-  segarkanCache();
-  return { berhasil: true };
+    setToken(data.token);
+    simpanKaderDariLogin(data.user);
+    segarkanCache();
+    return { berhasil: true };
+  } catch (error) {
+    const pesan =
+      error instanceof ApiError
+        ? error.message
+        : "Tidak bisa terhubung ke server.";
+    return { berhasil: false, pesan };
+  }
 }
 
-export function keluar() {
-  window.localStorage.removeItem(STORAGE_KEY);
+export async function keluar() {
+  try {
+    await apiFetch("/logout", { method: "POST" });
+  } catch {
+    // Token mungkin sudah kedaluwarsa/tidak valid; tetap hapus sesi lokal.
+  }
+
+  clearToken();
+  hapusKaderLokal();
   segarkanCache();
 }
 
-export function gantiKataSandi(
+export async function gantiKataSandi(
   kataSandiLama: string,
   kataSandiBaru: string,
-): { berhasil: true } | { berhasil: false; pesan: string } {
-  if (kataSandiLama !== bacaKataSandi()) {
-    return { berhasil: false, pesan: "Kata sandi saat ini salah." };
+): Promise<{ berhasil: true } | { berhasil: false; pesan: string }> {
+  try {
+    await apiFetch("/profil/kata-sandi", {
+      method: "PUT",
+      body: {
+        kata_sandi_lama: kataSandiLama,
+        kata_sandi_baru: kataSandiBaru,
+        kata_sandi_baru_confirmation: kataSandiBaru,
+      },
+    });
+    return { berhasil: true };
+  } catch (error) {
+    const pesan =
+      error instanceof ApiError
+        ? error.message
+        : "Tidak bisa terhubung ke server.";
+    return { berhasil: false, pesan };
   }
+}
 
-  window.localStorage.setItem(STORAGE_KEY_KATA_SANDI, kataSandiBaru);
-  return { berhasil: true };
+export async function lupaKataSandi(
+  email: string,
+): Promise<
+  { berhasil: true; pesan: string } | { berhasil: false; pesan: string }
+> {
+  try {
+    const data = await apiFetch<{ message: string }>("/lupa-kata-sandi", {
+      method: "POST",
+      body: { email },
+    });
+    return { berhasil: true, pesan: data.message };
+  } catch (error) {
+    const pesan =
+      error instanceof ApiError
+        ? error.message
+        : "Tidak bisa terhubung ke server.";
+    return { berhasil: false, pesan };
+  }
 }
 
 /**
- * Reset kata sandi dari tautan "lupa kata sandi" (tanpa perlu kata sandi
- * lama). Token belum diverifikasi ke backend — tiruan untuk alur frontend.
+ * Reset kata sandi dari tautan "lupa kata sandi" (token dari email, tanpa
+ * perlu kata sandi lama).
  */
-export function resetKataSandi(kataSandiBaru: string) {
-  window.localStorage.setItem(STORAGE_KEY_KATA_SANDI, kataSandiBaru);
+export async function resetKataSandi(
+  token: string,
+  email: string,
+  kataSandiBaru: string,
+): Promise<{ berhasil: true } | { berhasil: false; pesan: string }> {
+  try {
+    await apiFetch("/reset-kata-sandi", {
+      method: "POST",
+      body: {
+        token,
+        email,
+        kata_sandi_baru: kataSandiBaru,
+        kata_sandi_baru_confirmation: kataSandiBaru,
+      },
+    });
+    return { berhasil: true };
+  } catch (error) {
+    const pesan =
+      error instanceof ApiError
+        ? error.message
+        : "Tidak bisa terhubung ke server.";
+    return { berhasil: false, pesan };
+  }
 }

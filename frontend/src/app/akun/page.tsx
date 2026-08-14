@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { gantiKataSandi } from "@/lib/auth-store";
@@ -90,19 +91,30 @@ export default function AkunPage() {
     {},
   );
   const [tersimpan, setTersimpan] = useState(false);
+  const [pesanGagal, setPesanGagal] = useState("");
 
   function handleChange<K extends keyof FormState>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
     setTersimpan(false);
+    setPesanGagal("");
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errorBaru = validasi(form);
     setError(errorBaru);
     if (Object.keys(errorBaru).length > 0) return;
 
-    perbaruiKader({ nama: form.nama.trim(), posyandu: form.posyandu.trim() });
+    const hasil = await perbaruiKader({
+      nama: form.nama.trim(),
+      posyandu: form.posyandu.trim(),
+    });
+
+    if (!hasil.berhasil) {
+      setPesanGagal(hasil.pesan);
+      return;
+    }
+
     setTersimpan(true);
   }
 
@@ -123,13 +135,13 @@ export default function AkunPage() {
     setKataSandiTersimpan(false);
   }
 
-  function handleSubmitKataSandi(e: React.FormEvent) {
+  async function handleSubmitKataSandi(e: React.FormEvent) {
     e.preventDefault();
     const errorBaru = validasiKataSandi(formKataSandi);
     setErrorKataSandi(errorBaru);
     if (Object.keys(errorBaru).length > 0) return;
 
-    const hasil = gantiKataSandi(
+    const hasil = await gantiKataSandi(
       formKataSandi.kataSandiLama,
       formKataSandi.kataSandiBaru,
     );
@@ -204,6 +216,8 @@ export default function AkunPage() {
                   Email belum bisa diubah di versi ini.
                 </p>
               </div>
+
+              <ErrorMessage>{pesanGagal}</ErrorMessage>
 
               <Button
                 type="submit"
@@ -294,11 +308,7 @@ export default function AkunPage() {
                 )}
               </div>
 
-              {pesanGagalKataSandi && (
-                <p className="rounded-lg bg-rose-50 p-2.5 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                  {pesanGagalKataSandi}
-                </p>
-              )}
+              <ErrorMessage>{pesanGagalKataSandi}</ErrorMessage>
 
               <Button
                 type="submit"
