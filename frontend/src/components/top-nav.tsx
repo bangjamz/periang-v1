@@ -6,9 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSeedling } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/components/nav-items";
+import { KaderChip } from "@/components/kader-chip";
+import { HALAMAN_PUBLIK } from "@/lib/halaman-publik";
 
 export function TopNav() {
   const pathname = usePathname();
+
+  if (HALAMAN_PUBLIK.includes(pathname)) return null;
 
   return (
     <header className="sticky top-0 z-50 hidden border-b bg-white/95 backdrop-blur sm:block dark:bg-black/95">
@@ -57,6 +61,8 @@ export function TopNav() {
             );
           })}
         </nav>
+
+        <KaderChip />
       </div>
     </header>
   );

@@ -5,9 +5,12 @@ import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/components/nav-items";
+import { HALAMAN_PUBLIK } from "@/lib/halaman-publik";
 
 export function BottomNav() {
   const pathname = usePathname();
+
+  if (HALAMAN_PUBLIK.includes(pathname)) return null;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80 sm:hidden dark:bg-black/95">

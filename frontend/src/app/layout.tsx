@@ -5,6 +5,8 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
+import { MobileHeader } from "@/components/mobile-header";
+import { RouteGuard } from "@/components/route-guard";
 
 config.autoAddCss = false;
 
@@ -36,11 +38,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-black">
-        <TopNav />
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-16 sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
-          {children}
-        </div>
-        <BottomNav />
+        <RouteGuard>
+          <TopNav />
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-16 sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
+            <MobileHeader />
+            {children}
+          </div>
+          <BottomNav />
+        </RouteGuard>
       </body>
     </html>
   );

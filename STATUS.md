@@ -127,7 +127,31 @@ di-wiring ke API backend — lihat catatan implementasi). Task berikutnya:
 aplikasi).
 
 ### Fase 3 — Login & Pengaturan
-Sedang berjalan (baru mulai, frontend).
+Sedang berjalan.
+
+**Frontend** (selesai semua):
+- [x] Layout utama dengan data kader tiruan (`kader-data.ts` +
+      `kader-store.ts` localStorage; `KaderChip` avatar+nama di `TopNav`
+      desktop & `MobileHeader` mobile)
+- [x] Halaman masuk dengan validasi tiruan (`/masuk`, kredensial demo
+      `ratna.dewi@posyandu.id` / `posyandu123` — `auth-store.ts`)
+- [x] Proteksi route halaman utama (`RouteGuard` di root layout: redirect ke
+      `/masuk` kalau belum login, redirect ke `/` kalau sudah login tapi
+      buka halaman publik)
+- [x] Menu profil dengan opsi keluar (dropdown dari `KaderChip`, Base UI
+      Menu — `dropdown-menu.tsx`)
+- [x] Halaman profil dengan form nama & posyandu (`/akun`, reaktif ke
+      `KaderChip` lewat `useSyncExternalStore`)
+- [x] Bagian ganti kata sandi dengan validasi (di `/akun`, cek kata sandi
+      lama sebelum simpan yang baru)
+- [x] Halaman lupa kata sandi (`/lupa-kata-sandi`, simulasi kirim tautan —
+      belum ada pengirim email asli)
+- [x] Halaman reset kata sandi dari tautan (`/reset-kata-sandi?token=...`,
+      tautan tanpa token → pesan tidak valid)
+
+**Frontend Fase 3 selesai.** Task berikutnya: backend Fase 3, dimulai dari
+**migrasi tabel `users` & model pengguna** (autentikasi asli via Sanctum,
+menggantikan `auth-store.ts` tiruan).
 
 ## Catatan implementasi penting
 
@@ -155,3 +179,15 @@ Sedang berjalan (baru mulai, frontend).
   tambahkan prop `nativeButton={false}` — kalau lupa, muncul console error +
   badge "1 Issue" di dev overlay Next.js (sudah 2x kejadian, dicatat di sini
   supaya tidak terulang).
+- Login masih **tiruan** (`auth-store.ts`, `kader-store.ts`, localStorage) —
+  satu akun kader hardcode, tanpa hashing/session asli. Akan diganti Sanctum
+  saat backend Fase 3 (tabel `users`, endpoint login) selesai & di-wiring.
+- **Bug penting yang sudah diperbaiki**: `RouteGuard` (`route-guard.tsx`)
+  sempat salah redirect ke `/masuk` walau user sudah login, karena efeknya
+  membaca nilai `isLoggedIn` dari render pertama `useSyncExternalStore` yang
+  masih memakai `getServerSnapshot()` (selalu `false`) sesaat sebelum
+  snapshot klien sinkron saat hydration. Perbaikan: di dalam `useEffect`,
+  baca status auth langsung lewat `getAuthSnapshot()` (bukan variabel hasil
+  render) sehingga selalu dapat nilai terkini. Kalau ada guard/efek serupa
+  yang membaca `useSyncExternalStore` untuk keputusan redirect di halaman
+  lain, terapkan pola yang sama.
