@@ -305,15 +305,29 @@ lain (mis. `--port=8010`) dan sesuaikan `frontend/.env.local`
       lewat network request `/_next/image?url=...` mengembalikan 200 OK,
       next.config.ts tidak menonaktifkan optimasi gambar.
 
-Task berikutnya: fitur **Hubungkan Aplikasi ke Server** sisi **backend** (5
-task: skema database, API autentikasi, API CRUD balita, API riwayat &
-prediksi, API profil) — **checkpoint**: layer berubah dari frontend ke
-backend, berhenti dulu untuk konfirmasi user sebelum lanjut. Catatan: backend
-Laravel (auth Sanctum, CRUD balita/pemeriksaan/faktor-risiko, StatusGiziService,
-PrediksiRisikoService) sudah lengkap & sudah dites dari sesi-sesi sebelumnya
-(lihat Fase 1-3 & bagian "Hubungkan Aplikasi ke Server" frontend di atas) —
-5 task backend ini kemungkinan besar duplikat/sudah terpenuhi, perlu dicek
-task-by-task apakah masih relevan atau tinggal ditandai selesai.
+**Hubungkan Aplikasi ke Server (backend) — SELESAI (5/5 task):** dicek satu
+per satu terhadap backend Laravel yang sudah ada (bukan dibangun ulang) —
+semuanya sudah terpenuhi dari sesi-sesi sebelumnya:
+- [x] Skema database: `migrate:status` — semua tabel (`users`/kader,
+      `balita`, `pemeriksaan`, `faktor_risiko`, `personal_access_tokens`)
+      sudah ter-migrate.
+- [x] API autentikasi: `POST /api/login` & `/api/logout` dites langsung via
+      curl (login mengembalikan token Sanctum, logout 204).
+- [x] API CRUD balita: index/store/show/update/destroy di `routes/api.php`,
+      sudah dites live dari browser sepanjang sesi ini.
+- [x] API riwayat pemeriksaan & prediksi: CRUD `/api/pemeriksaan` +
+      `GET /api/balita/{id}/prediksi`, sudah dites live.
+- [x] API profil & ganti kata sandi: `/api/profil` (GET/PUT),
+      `/api/profil/kata-sandi`, `/lupa-kata-sandi`, `/reset-kata-sandi` semua
+      ada & sudah dites live.
+
+## 🎉 Seluruh plan PERIANG (36 task Fase 4 + Fase 1-3) SELESAI
+
+`npx ngodingpakeai task next` mengembalikan `done: true` — tidak ada task
+tersisa di server NgodingPakeAI untuk plan ini. Satu-satunya pekerjaan besar
+yang belum masuk plan adalah **Model Prediksi Risiko (champion ML algorithm)**
+— lihat bagian "⭐ Upcoming" di atas, sengaja belum ditambahkan ke server atas
+permintaan user, menunggu instruksi lanjutan.
 
 ## Catatan implementasi penting
 
