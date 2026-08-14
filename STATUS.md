@@ -375,3 +375,36 @@ permintaan user, menunggu instruksi lanjutan.
   render) sehingga selalu dapat nilai terkini. Kalau ada guard/efek serupa
   yang membaca `useSyncExternalStore` untuk keputusan redirect di halaman
   lain, terapkan pola yang sama.
+
+## Fitur tambahan (di luar plan server): Welcome Tour
+
+Diminta langsung oleh user via chat (bukan lewat NgodingPakeAI), sudah
+selesai & terverifikasi di browser — **belum ditambahkan sebagai task ke
+server NgodingPakeAI** (plan di server sudah `done: true`, ini murni
+tambahan lokal):
+
+- Komponen baru: `frontend/src/components/tour/tour-provider.tsx` (context +
+  auto-start sekali per akun via localStorage key `periang_tour_selesai`) &
+  `tour-overlay.tsx` (spotlight/masking pakai teknik box-shadow ganda —
+  cincin putih + area gelap 9999px, portal ke `document.body`, auto-flip
+  posisi tooltip atas/bawah tergantung ruang viewport).
+- Langkah tour didefinisikan di `frontend/src/lib/tour-steps.ts` (9 langkah:
+  sambutan, 5 menu nav, 1 langkah khusus halaman Cek Status Gizi, profil
+  kader, penutup). Target elemen ditandai `data-tour="..."` di
+  `bottom-nav.tsx`, `top-nav.tsx`, `kader-chip.tsx`,
+  `cek-status-gizi/page.tsx`.
+- Langkah yang selector-nya tidak ada di halaman aktif (mis. tour diulang
+  dari halaman selain Cek Status Gizi) otomatis di-skip — sudah diverifikasi
+  lewat tombol "Mulai Tour Lagi" di halaman Akun Saya.
+- **Bug yang sempat terjadi & sudah diperbaiki**: auto-start tidak pernah
+  muncul di percobaan pertama karena React Strict Mode (dev) meng-invoke
+  effect dua kali (mount→cleanup→mount); cleanup effect pertama
+  membatalkan `setTimeout` yang sudah dijadwalkan, dan guard `useRef`
+  mencegah penjadwalan ulang di invoke kedua. Perbaikan: `setTimeout` di
+  effect auto-start sengaja **tidak** di-cleanup (aman karena
+  `TourProvider` hidup sepanjang umur SPA, tidak unmount kecuali hard
+  navigation yang toh menghancurkan seluruh JS context).
+- Bug lain yang diperbaiki: inline `style={{boxShadow: ...}}` menimpa total
+  class Tailwind `ring-4 ring-white/90` (properti CSS sama, inline menang) —
+  cincin spotlight jadi tidak kelihatan. Perbaikan: gabungkan kedua efek
+  jadi satu nilai `boxShadow` inline.

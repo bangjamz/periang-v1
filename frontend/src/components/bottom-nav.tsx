@@ -22,6 +22,7 @@ export function BottomNav() {
             return (
               <span
                 key={item.href}
+                data-tour={`nav-${item.href.slice(1)}`}
                 aria-disabled="true"
                 className="flex min-h-14 flex-1 cursor-not-allowed flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-xs font-semibold text-zinc-300 dark:text-zinc-700"
               >
@@ -35,6 +36,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              data-tour={`nav-${item.href.slice(1)}`}
               className={cn(
                 "flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-xs font-semibold transition-colors",
                 isActive

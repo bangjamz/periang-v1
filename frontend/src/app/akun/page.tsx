@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
+  faCompass,
   faFloppyDisk,
   faLock,
   faUser,
@@ -20,6 +21,7 @@ import {
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTour } from "@/components/tour/tour-provider";
 import { gantiKataSandi } from "@/lib/auth-store";
 import {
   getKaderServerSnapshot,
@@ -79,6 +81,7 @@ function validasiKataSandi(
 }
 
 export default function AkunPage() {
+  const { mulaiTour } = useTour();
   const kader = useSyncExternalStore(
     subscribeKader,
     getKaderSnapshot,
@@ -333,6 +336,32 @@ export default function AkunPage() {
                 {kataSandiTersimpan ? "Tersimpan" : "Simpan Kata Sandi"}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6 w-full max-w-lg border-slate-100 shadow-sm dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FontAwesomeIcon
+                icon={faCompass}
+                className="size-4 text-slate-500"
+              />
+              Panduan Aplikasi
+            </CardTitle>
+            <CardDescription>
+              Ulangi tour perkenalan menu-menu utama PERIANG.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={mulaiTour}
+              className="w-full"
+            >
+              <FontAwesomeIcon icon={faCompass} />
+              Mulai Tour Lagi
+            </Button>
           </CardContent>
         </Card>
       </div>

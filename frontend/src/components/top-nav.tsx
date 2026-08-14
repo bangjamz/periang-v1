@@ -37,6 +37,7 @@ export function TopNav() {
               return (
                 <span
                   key={item.href}
+                  data-tour={`nav-${item.href.slice(1)}`}
                   aria-disabled="true"
                   className="flex cursor-not-allowed items-center gap-2 rounded-full px-3 py-2 text-sm text-zinc-300 dark:text-zinc-700"
                 >
@@ -50,6 +51,7 @@ export function TopNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                data-tour={`nav-${item.href.slice(1)}`}
                 className={cn(
                   "flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-colors",
                   isActive

@@ -232,7 +232,10 @@ function CekStatusGiziContent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
+            <div
+              className="flex flex-col gap-2"
+              data-tour="cek-gizi-balita-picker"
+            >
               <Label htmlFor="balita">Pilih Balita</Label>
               <BalitaPicker
                 id="balita"

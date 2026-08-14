@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { RouteGuard } from "@/components/route-guard";
+import { TourProvider } from "@/components/tour/tour-provider";
 
 config.autoAddCss = false;
 
@@ -62,12 +63,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-black">
         <RouteGuard>
-          <TopNav />
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
-            <MobileHeader />
-            {children}
-          </div>
-          <BottomNav />
+          <TourProvider>
+            <TopNav />
+            <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
+              <MobileHeader />
+              {children}
+            </div>
+            <BottomNav />
+          </TourProvider>
         </RouteGuard>
       </body>
     </html>

@@ -50,6 +50,7 @@ export function KaderChip({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        data-tour="kader-chip"
         className={cn(
           "flex items-center gap-2 rounded-full border bg-zinc-50 py-1 pr-3 pl-1 outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:bg-zinc-900",
           compact && "border-none bg-transparent p-0",
