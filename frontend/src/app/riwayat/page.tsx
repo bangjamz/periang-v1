@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -158,10 +159,13 @@ export default function RiwayatPage() {
 
         {!memuat && grup.length === 0 && (
           <Card className="border-dashed shadow-none">
-            <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
-              <FontAwesomeIcon
-                icon={faClockRotateLeft}
-                className="size-6 text-zinc-300"
+            <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
+              <Image
+                src="/images/onboarding/empty-state.webp"
+                alt="Belum ada riwayat pemeriksaan"
+                width={200}
+                height={200}
+                className="size-40 object-contain"
               />
               <p className="text-sm text-zinc-400">
                 {riwayat.length === 0

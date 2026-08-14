@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleCheck,
@@ -52,6 +53,7 @@ const STATUS_RISIKO: Record<
     badge: string;
     ring: string;
     text: string;
+    img: string;
   }
 > = {
   rendah: {
@@ -61,6 +63,7 @@ const STATUS_RISIKO: Record<
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ring: "ring-emerald-200 dark:ring-emerald-900",
     text: "text-emerald-600 dark:text-emerald-400",
+    img: "/images/results/risiko-rendah.webp",
   },
   sedang: {
     label: "Risiko Sedang",
@@ -69,6 +72,7 @@ const STATUS_RISIKO: Record<
       "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ring: "ring-amber-200 dark:ring-amber-900",
     text: "text-amber-600 dark:text-amber-400",
+    img: "/images/results/pemeriksaan-lanjutan.webp",
   },
   tinggi: {
     label: "Risiko Tinggi",
@@ -76,6 +80,7 @@ const STATUS_RISIKO: Record<
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     ring: "ring-rose-200 dark:ring-rose-900",
     text: "text-rose-600 dark:text-rose-400",
+    img: "/images/results/pemeriksaan-lanjutan.webp",
   },
 };
 
@@ -216,19 +221,28 @@ export default function PrediksiPage() {
               <CardDescription>{balitaTerpilih.nama}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="flex items-center gap-2.5">
-                <FontAwesomeIcon
-                  icon={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].icon}
-                  className={cn(
-                    "size-6",
-                    STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text,
-                  )}
+              <div className="flex items-center gap-3">
+                <Image
+                  src={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].img}
+                  alt={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].label}
+                  width={72}
+                  height={72}
+                  className="size-16 shrink-0 object-contain"
                 />
-                <BigWord
-                  className={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text}
-                >
-                  {STATUS_RISIKO[hasilPrediksi.tingkatRisiko].label}
-                </BigWord>
+                <div className="flex items-center gap-2.5">
+                  <FontAwesomeIcon
+                    icon={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].icon}
+                    className={cn(
+                      "size-6",
+                      STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text,
+                    )}
+                  />
+                  <BigWord
+                    className={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text}
+                  >
+                    {STATUS_RISIKO[hasilPrediksi.tingkatRisiko].label}
+                  </BigWord>
+                </div>
               </div>
 
               <p

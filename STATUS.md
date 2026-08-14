@@ -278,9 +278,42 @@ lain (mis. `--port=8010`) dan sesuaikan `frontend/.env.local`
       `pb-[calc(4.5rem+env(...))]` di kontainer) — diverifikasi di viewport
       320px & 375px, semua 5 label tetap penuh terbaca, tidak terpotong.
 
-Task berikutnya: fitur **Pasang Gambar dan Maskot Aplikasi** (masih layer
-frontend, fase 3 — bukan checkpoint, lanjut otomatis sesuai arahan user
-"jalankan semua"). Fitur ini butuh aset dari `assets/` di root repo.
+**Pasang Gambar dan Maskot Aplikasi — SELESAI (17/17 task):**
+- [x] Semua aset dari `assets/` (brand, hero, characters, onboarding,
+      results, banners) dikonversi ke WebP (`cwebp -q 82`, ukuran turun dari
+      1-2MB ke 20-80KB per gambar) dan disalin ke `frontend/public/images/`.
+      Ikon brand (favicon/app-icon) dibiarkan PNG (sudah kecil, butuh
+      kompatibilitas luas untuk favicon).
+- [x] Favicon & app icon didaftarkan lewat `metadata.icons` di `layout.tsx`.
+- [x] Logo diganti dari ikon FontAwesome ke gambar asli di top-nav,
+      mobile-header, dan halaman login.
+- [x] Halaman login (`masuk/page.tsx`) dirombak: hero image responsif
+      (hero-mobile banner di HP, hero-web split-panel di desktop/`lg:`),
+      panduan 3 langkah (onboarding step-1/2/3), banner promosi peluncuran.
+- [x] Maskot "Si Tumbuh" (`onboarding/empty-state.webp`) dipakai di semua
+      empty-state (Data Balita & Riwayat Cek, saat pencarian tidak ketemu
+      atau belum ada data).
+- [x] Ilustrasi kader/ibu-balita dipasang di header halaman Data Balita
+      (`ibu-balita.webp`) & Profil Saya (`kader-menimbang.webp`), tersembunyi
+      di HP kecil (`sm:block`) supaya tidak menyempitkan konten.
+- [x] Gambar hasil (`results/risiko-rendah.webp` untuk status/risiko baik,
+      `results/pemeriksaan-lanjutan.webp` untuk status/risiko yang perlu
+      tindak lanjut) dipasang di kartu hasil Cek Status Gizi & Prediksi
+      Risiko, berdampingan dengan BigWord status.
+- [x] Banner edukasi gizi di bawah halaman Cek Status Gizi (halaman utama).
+- [x] Semua gambar dirender lewat `next/image` (bukan `<img>`) — diverifikasi
+      lewat network request `/_next/image?url=...` mengembalikan 200 OK,
+      next.config.ts tidak menonaktifkan optimasi gambar.
+
+Task berikutnya: fitur **Hubungkan Aplikasi ke Server** sisi **backend** (5
+task: skema database, API autentikasi, API CRUD balita, API riwayat &
+prediksi, API profil) — **checkpoint**: layer berubah dari frontend ke
+backend, berhenti dulu untuk konfirmasi user sebelum lanjut. Catatan: backend
+Laravel (auth Sanctum, CRUD balita/pemeriksaan/faktor-risiko, StatusGiziService,
+PrediksiRisikoService) sudah lengkap & sudah dites dari sesi-sesi sebelumnya
+(lihat Fase 1-3 & bagian "Hubungkan Aplikasi ke Server" frontend di atas) —
+5 task backend ini kemungkinan besar duplikat/sudah terpenuhi, perlu dicek
+task-by-task apakah masih relevan atau tinggal ditandai selesai.
 
 ## Catatan implementasi penting
 

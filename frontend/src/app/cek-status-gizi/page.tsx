@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -53,7 +54,13 @@ import { getRiwayatByBalita, simpanRiwayatCek } from "@/lib/riwayat-store";
 
 const STATUS_STYLE: Record<
   StatusGizi,
-  { icon: IconDefinition; badge: string; ring: string; text: string }
+  {
+    icon: IconDefinition;
+    badge: string;
+    ring: string;
+    text: string;
+    img: string;
+  }
 > = {
   normal: {
     icon: faCheckCircle,
@@ -61,6 +68,7 @@ const STATUS_STYLE: Record<
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ring: "ring-emerald-200 dark:ring-emerald-900",
     text: "text-emerald-600 dark:text-emerald-400",
+    img: "/images/results/risiko-rendah.webp",
   },
   kurang: {
     icon: faTriangleExclamation,
@@ -68,12 +76,14 @@ const STATUS_STYLE: Record<
       "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ring: "ring-amber-200 dark:ring-amber-900",
     text: "text-amber-600 dark:text-amber-400",
+    img: "/images/results/pemeriksaan-lanjutan.webp",
   },
   buruk: {
     icon: faCircleExclamation,
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     ring: "ring-rose-200 dark:ring-rose-900",
     text: "text-rose-600 dark:text-rose-400",
+    img: "/images/results/pemeriksaan-lanjutan.webp",
   },
   pendek: {
     icon: faRulerVertical,
@@ -81,6 +91,7 @@ const STATUS_STYLE: Record<
       "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
     ring: "ring-violet-200 dark:ring-violet-900",
     text: "text-violet-600 dark:text-violet-400",
+    img: "/images/results/pemeriksaan-lanjutan.webp",
   },
 };
 
@@ -328,14 +339,23 @@ function CekStatusGiziContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="flex items-center gap-2.5">
-                <FontAwesomeIcon
-                  icon={STATUS_STYLE[hasil.status].icon}
-                  className={cn("size-6", STATUS_STYLE[hasil.status].text)}
+              <div className="flex items-center gap-3">
+                <Image
+                  src={STATUS_STYLE[hasil.status].img}
+                  alt={STATUS_GIZI_LABEL[hasil.status]}
+                  width={72}
+                  height={72}
+                  className="size-16 shrink-0 object-contain"
                 />
-                <BigWord className={STATUS_STYLE[hasil.status].text}>
-                  {STATUS_GIZI_LABEL[hasil.status]}
-                </BigWord>
+                <div className="flex items-center gap-2.5">
+                  <FontAwesomeIcon
+                    icon={STATUS_STYLE[hasil.status].icon}
+                    className={cn("size-6", STATUS_STYLE[hasil.status].text)}
+                  />
+                  <BigWord className={STATUS_STYLE[hasil.status].text}>
+                    {STATUS_GIZI_LABEL[hasil.status]}
+                  </BigWord>
+                </div>
               </div>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 {STATUS_GIZI_DESKRIPSI[hasil.status]}
@@ -461,6 +481,14 @@ function CekStatusGiziContent() {
             </CardContent>
           </Card>
         )}
+
+        <Image
+          src="/images/banners/edukasi.webp"
+          alt="Edukasi gizi seimbang untuk tumbuh kembang balita"
+          width={1080}
+          height={1080}
+          className="w-full rounded-2xl lg:col-span-2"
+        />
       </div>
     </div>
   );

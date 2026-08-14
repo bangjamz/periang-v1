@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -78,18 +79,27 @@ export default function BalitaPage() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="bg-gradient-to-br from-pink-500 via-pink-400 to-rose-400 px-4 py-8 text-white sm:rounded-b-3xl sm:px-8">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-white/20">
-            <FontAwesomeIcon icon={faBaby} className="size-5" />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Data Balita
-            </h1>
-            <p className="text-sm text-pink-50/90">
-              Kelola data pokok balita di posyandu Anda.
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-white/20">
+              <FontAwesomeIcon icon={faBaby} className="size-5" />
+            </span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                Data Balita
+              </h1>
+              <p className="text-sm text-pink-50/90">
+                Kelola data pokok balita di posyandu Anda.
+              </p>
+            </div>
           </div>
+          <Image
+            src="/images/characters/ibu-balita.webp"
+            alt="Ilustrasi ibu dan balita"
+            width={72}
+            height={72}
+            className="hidden size-16 shrink-0 rounded-2xl object-cover sm:block"
+          />
         </div>
       </div>
 
@@ -165,8 +175,14 @@ export default function BalitaPage() {
 
         {!memuat && hasil.length === 0 && (
           <Card className="border-dashed shadow-none">
-            <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
-              <FontAwesomeIcon icon={faBaby} className="size-6 text-zinc-300" />
+            <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
+              <Image
+                src="/images/onboarding/empty-state.webp"
+                alt="Belum ada data balita"
+                width={200}
+                height={200}
+                className="size-40 object-contain"
+              />
               <p className="text-sm text-zinc-400">
                 Tidak ada balita yang cocok dengan pencarian.
               </p>

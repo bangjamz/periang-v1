@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLock,
-  faRightToBracket,
-  faSeedling,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLock, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,6 +25,21 @@ type FormState = {
 };
 
 const KOSONG: FormState = { email: "", kataSandi: "" };
+
+const LANGKAH = [
+  {
+    src: "/images/onboarding/step-1.webp",
+    label: "1. Isi Data Balita",
+  },
+  {
+    src: "/images/onboarding/step-2.webp",
+    label: "2. Analisis Otomatis",
+  },
+  {
+    src: "/images/onboarding/step-3.webp",
+    label: "3. Lihat Hasil",
+  },
+] as const;
 
 function validasi(form: FormState): Partial<Record<keyof FormState, string>> {
   const error: Partial<Record<keyof FormState, string>> = {};
@@ -80,84 +92,140 @@ export default function MasukPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
-      <div className="mb-6 flex flex-col items-center gap-2">
-        <span className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 via-emerald-400 to-amber-300 text-white">
-          <FontAwesomeIcon icon={faSeedling} className="size-6" />
-        </span>
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          PERIANG
-        </h1>
-        <p className="text-center text-sm text-zinc-500">
-          Prediksi dan Analisis Balita Gizi Kurang
-        </p>
+    <div className="flex flex-1 flex-col lg:flex-row">
+      <div className="relative hidden shrink-0 overflow-hidden lg:block lg:w-[42%]">
+        <Image
+          src="/images/hero/hero-web.webp"
+          alt="Kader posyandu membantu ibu memantau tumbuh kembang balita"
+          fill
+          priority
+          sizes="42vw"
+          className="object-cover"
+        />
       </div>
 
-      <Card className="w-full max-w-sm border-zinc-100 shadow-sm dark:border-zinc-800">
-        <CardHeader>
-          <CardTitle>Masuk</CardTitle>
-          <CardDescription>
-            Masuk sebagai kader posyandu untuk mengelola data gizi balita.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="username"
-                placeholder="nama@posyandu.id"
-                value={form.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                aria-invalid={!!error.email}
-              />
-              {error.email && (
-                <p className="text-xs text-rose-600">{error.email}</p>
-              )}
-            </div>
+      <div className="relative overflow-hidden lg:hidden">
+        <Image
+          src="/images/hero/hero-mobile.webp"
+          alt="Kader posyandu membantu ibu memantau tumbuh kembang balita"
+          width={1080}
+          height={640}
+          priority
+          className="h-52 w-full object-cover object-[center_55%] sm:h-72"
+        />
+      </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="kata-sandi">Kata Sandi</Label>
-              <Input
-                id="kata-sandi"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Masukkan kata sandi"
-                value={form.kataSandi}
-                onChange={(e) => handleChange("kataSandi", e.target.value)}
-                aria-invalid={!!error.kataSandi}
-              />
-              {error.kataSandi && (
-                <p className="text-xs text-rose-600">{error.kataSandi}</p>
-              )}
-              <Link
-                href="/lupa-kata-sandi"
-                className="self-end text-xs text-sky-600 hover:underline dark:text-sky-400"
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-8">
+        <div className="flex flex-col items-center gap-2">
+          <Image
+            src="/images/brand/app-icon-192.png"
+            alt="Logo PERIANG"
+            width={56}
+            height={56}
+            className="size-14 rounded-2xl"
+          />
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            PERIANG
+          </h1>
+          <p className="text-center text-sm text-zinc-500">
+            Prediksi dan Analisis Balita Gizi Kurang
+          </p>
+        </div>
+
+        <Card className="w-full max-w-sm border-zinc-100 shadow-sm dark:border-zinc-800">
+          <CardHeader>
+            <CardTitle>Masuk</CardTitle>
+            <CardDescription>
+              Masuk sebagai kader posyandu untuk mengelola data gizi balita.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="username"
+                  placeholder="nama@posyandu.id"
+                  value={form.email}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  aria-invalid={!!error.email}
+                />
+                {error.email && (
+                  <p className="text-xs text-rose-600">{error.email}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="kata-sandi">Kata Sandi</Label>
+                <Input
+                  id="kata-sandi"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Masukkan kata sandi"
+                  value={form.kataSandi}
+                  onChange={(e) => handleChange("kataSandi", e.target.value)}
+                  aria-invalid={!!error.kataSandi}
+                />
+                {error.kataSandi && (
+                  <p className="text-xs text-rose-600">{error.kataSandi}</p>
+                )}
+                <Link
+                  href="/lupa-kata-sandi"
+                  className="self-end text-xs text-sky-600 hover:underline dark:text-sky-400"
+                >
+                  Lupa kata sandi?
+                </Link>
+              </div>
+
+              <ErrorMessage>{pesanGagal}</ErrorMessage>
+
+              <Button
+                type="submit"
+                disabled={memproses}
+                className="bg-sky-500 hover:bg-sky-600"
               >
-                Lupa kata sandi?
-              </Link>
-            </div>
+                <FontAwesomeIcon icon={faRightToBracket} />
+                {memproses ? "Memproses..." : "Masuk"}
+              </Button>
 
-            <ErrorMessage>{pesanGagal}</ErrorMessage>
+              <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
+                <FontAwesomeIcon icon={faLock} className="size-3" />
+                Demo: ratna.dewi@posyandu.id / posyandu123
+              </p>
+            </form>
+          </CardContent>
+        </Card>
 
-            <Button
-              type="submit"
-              disabled={memproses}
-              className="bg-sky-500 hover:bg-sky-600"
+        <div className="grid w-full max-w-sm grid-cols-3 gap-2">
+          {LANGKAH.map((langkah) => (
+            <div
+              key={langkah.label}
+              className="flex flex-col items-center gap-1.5"
             >
-              <FontAwesomeIcon icon={faRightToBracket} />
-              {memproses ? "Memproses..." : "Masuk"}
-            </Button>
+              <Image
+                src={langkah.src}
+                alt={langkah.label}
+                width={80}
+                height={80}
+                className="size-16 rounded-xl object-cover sm:size-20"
+              />
+              <p className="text-center text-[11px] font-medium text-zinc-500">
+                {langkah.label}
+              </p>
+            </div>
+          ))}
+        </div>
 
-            <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
-              <FontAwesomeIcon icon={faLock} className="size-3" />
-              Demo: ratna.dewi@posyandu.id / posyandu123
-            </p>
-          </form>
-        </CardContent>
-      </Card>
+        <Image
+          src="/images/banners/launch.webp"
+          alt="PERIANG kini hadir untuk membantu kader posyandu memantau gizi balita"
+          width={1080}
+          height={1080}
+          className="w-full max-w-sm rounded-2xl"
+        />
+      </div>
     </div>
   );
 }

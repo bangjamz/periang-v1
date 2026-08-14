@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
@@ -158,18 +159,27 @@ export default function AkunPage() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="bg-gradient-to-br from-slate-500 via-slate-400 to-zinc-400 px-4 py-8 text-white sm:rounded-b-3xl sm:px-8">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-white/20">
-            <FontAwesomeIcon icon={faUser} className="size-5" />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Profil Saya
-            </h1>
-            <p className="text-sm text-slate-50/90">
-              Kelola data akun & posyandu Anda.
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-white/20">
+              <FontAwesomeIcon icon={faUser} className="size-5" />
+            </span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                Profil Saya
+              </h1>
+              <p className="text-sm text-slate-50/90">
+                Kelola data akun & posyandu Anda.
+              </p>
+            </div>
           </div>
+          <Image
+            src="/images/characters/kader-menimbang.webp"
+            alt="Ilustrasi kader posyandu menimbang balita"
+            width={72}
+            height={72}
+            className="hidden size-16 shrink-0 rounded-2xl object-cover sm:block"
+          />
         </div>
       </div>
 
