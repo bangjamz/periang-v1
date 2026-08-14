@@ -11,6 +11,7 @@ import {
   faTriangleExclamation,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { BigNumber, BigWord } from "@/components/ui/big-number";
 import {
   Card,
   CardContent,
@@ -45,7 +46,13 @@ import { cn } from "@/lib/utils";
 
 const STATUS_RISIKO: Record<
   TingkatRisiko,
-  { label: string; icon: IconDefinition; badge: string; ring: string }
+  {
+    label: string;
+    icon: IconDefinition;
+    badge: string;
+    ring: string;
+    text: string;
+  }
 > = {
   rendah: {
     label: "Risiko Rendah",
@@ -53,6 +60,7 @@ const STATUS_RISIKO: Record<
     badge:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ring: "ring-emerald-200 dark:ring-emerald-900",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   sedang: {
     label: "Risiko Sedang",
@@ -60,12 +68,14 @@ const STATUS_RISIKO: Record<
     badge:
       "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ring: "ring-amber-200 dark:ring-amber-900",
+    text: "text-amber-600 dark:text-amber-400",
   },
   tinggi: {
     label: "Risiko Tinggi",
     icon: faCircleExclamation,
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     ring: "ring-rose-200 dark:ring-rose-900",
+    text: "text-rose-600 dark:text-rose-400",
   },
 };
 
@@ -206,16 +216,19 @@ export default function PrediksiPage() {
               <CardDescription>{balitaTerpilih.nama}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div
-                className={cn(
-                  "flex items-center gap-2 self-start rounded-full px-4 py-1.5 text-sm font-semibold",
-                  STATUS_RISIKO[hasilPrediksi.tingkatRisiko].badge,
-                )}
-              >
+              <div className="flex items-center gap-2.5">
                 <FontAwesomeIcon
                   icon={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].icon}
+                  className={cn(
+                    "size-6",
+                    STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text,
+                  )}
                 />
-                {STATUS_RISIKO[hasilPrediksi.tingkatRisiko].label}
+                <BigWord
+                  className={STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text}
+                >
+                  {STATUS_RISIKO[hasilPrediksi.tingkatRisiko].label}
+                </BigWord>
               </div>
 
               <p
@@ -228,14 +241,14 @@ export default function PrediksiPage() {
               </p>
 
               <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-600 dark:text-zinc-300">
-                    Skor risiko
-                  </span>
-                  <span className="font-medium">
-                    {hasilPrediksi.skor} / {hasilPrediksi.skorMaksimal}
-                  </span>
-                </div>
+                <BigNumber
+                  label="Skor risiko"
+                  value={hasilPrediksi.skor}
+                  unit={`/ ${hasilPrediksi.skorMaksimal}`}
+                  valueClassName={
+                    STATUS_RISIKO[hasilPrediksi.tingkatRisiko].text
+                  }
+                />
                 <Progress
                   value={
                     (hasilPrediksi.skor / hasilPrediksi.skorMaksimal) * 100

@@ -17,6 +17,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { BigNumber } from "@/components/ui/big-number";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -93,6 +94,8 @@ export default function GrafikPage() {
   const umurSaatIni = balitaTerpilih
     ? hitungUmurBulan(balitaTerpilih.tanggalLahir)
     : null;
+
+  const riwayatTerakhir = riwayatBalita[riwayatBalita.length - 1] ?? null;
 
   const titikUmur = useMemo(() => {
     const gabungan = new Set([
@@ -249,6 +252,15 @@ export default function GrafikPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {riwayatTerakhir && (
+                  <BigNumber
+                    label="Berat terakhir"
+                    value={riwayatTerakhir.beratKg}
+                    unit="kg"
+                    className="mb-3"
+                    valueClassName="text-sky-600 dark:text-sky-400"
+                  />
+                )}
                 <ChartContainer config={BERAT_CONFIG} className="w-full">
                   <ComposedChart
                     data={dataBerat}
@@ -327,6 +339,15 @@ export default function GrafikPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {riwayatTerakhir && (
+                  <BigNumber
+                    label="Tinggi terakhir"
+                    value={riwayatTerakhir.tinggiCm}
+                    unit="cm"
+                    className="mb-3"
+                    valueClassName="text-violet-600 dark:text-violet-400"
+                  />
+                )}
                 <ChartContainer config={TINGGI_CONFIG} className="w-full">
                   <ComposedChart
                     data={dataTinggi}

@@ -30,6 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BigNumber, BigWord } from "@/components/ui/big-number";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -60,30 +61,34 @@ import { useRouter } from "next/navigation";
 
 const STATUS_STYLE: Record<
   StatusGizi,
-  { icon: IconDefinition; badge: string; ring: string }
+  { icon: IconDefinition; badge: string; ring: string; text: string }
 > = {
   normal: {
     icon: faCheckCircle,
     badge:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ring: "ring-emerald-200 dark:ring-emerald-900",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   kurang: {
     icon: faTriangleExclamation,
     badge:
       "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ring: "ring-amber-200 dark:ring-amber-900",
+    text: "text-amber-600 dark:text-amber-400",
   },
   buruk: {
     icon: faCircleExclamation,
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     ring: "ring-rose-200 dark:ring-rose-900",
+    text: "text-rose-600 dark:text-rose-400",
   },
   pendek: {
     icon: faRulerVertical,
     badge:
       "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
     ring: "ring-violet-200 dark:ring-violet-900",
+    text: "text-violet-600 dark:text-violet-400",
   },
 };
 
@@ -190,14 +195,14 @@ export default function DetailRiwayatPage({
         >
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold",
-                  STATUS_STYLE[entry.status].badge,
-                )}
-              >
-                <FontAwesomeIcon icon={STATUS_STYLE[entry.status].icon} />
-                {STATUS_GIZI_LABEL[entry.status]}
+              <div className="flex items-center gap-2.5">
+                <FontAwesomeIcon
+                  icon={STATUS_STYLE[entry.status].icon}
+                  className={cn("size-5", STATUS_STYLE[entry.status].text)}
+                />
+                <BigWord className={STATUS_STYLE[entry.status].text}>
+                  {STATUS_GIZI_LABEL[entry.status]}
+                </BigWord>
               </div>
               <span className="flex items-center gap-1.5 text-xs text-zinc-500">
                 <FontAwesomeIcon icon={faCalendarDay} className="size-3" />
@@ -211,6 +216,21 @@ export default function DetailRiwayatPage({
 
             <Separator />
 
+            <div className="grid grid-cols-2 gap-4">
+              <BigNumber
+                label="Berat badan"
+                value={entry.beratKg}
+                unit="kg"
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+              <BigNumber
+                label="Tinggi badan"
+                value={entry.tinggiCm}
+                unit="cm"
+                valueClassName="text-violet-600 dark:text-violet-400"
+              />
+            </div>
+
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-sm">
@@ -219,13 +239,7 @@ export default function DetailRiwayatPage({
                       icon={faWeightHanging}
                       className="size-3.5 text-emerald-500"
                     />
-                    Berat badan
-                  </span>
-                  <span className="font-medium">
-                    {entry.beratKg} kg{" "}
-                    <span className="text-zinc-400">
-                      / standar {analisis.beratIdealKg.toFixed(1)} kg
-                    </span>
+                    standar berat {analisis.beratIdealKg.toFixed(1)} kg
                   </span>
                 </div>
                 <Progress value={Math.min(analisis.rasioBerat * 100, 100)} />
@@ -238,13 +252,7 @@ export default function DetailRiwayatPage({
                       icon={faRulerVertical}
                       className="size-3.5 text-violet-500"
                     />
-                    Tinggi badan
-                  </span>
-                  <span className="font-medium">
-                    {entry.tinggiCm} cm{" "}
-                    <span className="text-zinc-400">
-                      / standar {analisis.tinggiIdealCm.toFixed(1)} cm
-                    </span>
+                    standar tinggi {analisis.tinggiIdealCm.toFixed(1)} cm
                   </span>
                 </div>
                 <Progress value={Math.min(analisis.rasioTinggi * 100, 100)} />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Nunito } from "next/font/google";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import "./globals.css";
@@ -10,9 +10,11 @@ import { RouteGuard } from "@/components/route-guard";
 
 config.autoAddCss = false;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Font ramah & mudah dibaca (menggantikan Geist) — lihat PRD "Huruf Ramah dan Angka Menonjol".
+const nunito = Nunito({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const geistMono = Geist_Mono({
@@ -29,18 +31,19 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${nunito.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-black">
         <RouteGuard>
           <TopNav />
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-16 sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col bg-white pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:max-w-2xl sm:pb-0 lg:max-w-5xl dark:bg-black">
             <MobileHeader />
             {children}
           </div>

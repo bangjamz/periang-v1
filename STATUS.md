@@ -253,9 +253,34 @@ dengan project lain di mesin yang sama — kalau itu terjadi, jalankan di port
 lain (mis. `--port=8010`) dan sesuaikan `frontend/.env.local`
 (`NEXT_PUBLIC_API_URL`).
 
-Task berikutnya: fitur **Perbaiki Menu Bawah di HP** (masih layer frontend,
-fase 3 — bukan checkpoint, lanjut otomatis sesuai arahan user "jalankan
-semua").
+**Huruf Ramah dan Angka Menonjol — SELESAI (8/8 task):**
+- [x] Font global diganti dari Geist ke **Nunito** (`--font-sans`, lewat
+      `next/font/google`) — sekaligus perbaiki bug lama: `globals.css` set
+      `--font-sans: var(--font-sans)` (sirkular) karena `layout.tsx` set
+      `--font-geist-sans`, bukan `--font-sans`.
+- [x] Skala tipografi dasar: `html { font-size: 17px }`, `body { line-height:
+      1.6 }`, heading `line-height: 1.25` (`globals.css` `@layer base`).
+- [x] Komponen `BigNumber`/`BigWord` baru
+      (`frontend/src/components/ui/big-number.tsx`) dipakai di: hasil Cek
+      Status Gizi (berat/tinggi + status), detail Riwayat Cek
+      (berat/tinggi + status), kartu Balita (umur bulan), ringkasan Grafik
+      Pertumbuhan (berat/tinggi terakhir), hasil Prediksi Risiko (skor +
+      tingkat risiko).
+
+**Perbaiki Menu Bawah di HP — SELESAI (5/5 task):**
+- [x] `bottom-nav.tsx` + `nav-items.ts` dirombak: ikon `size-5→size-6`, label
+      `11px→text-xs font-semibold` (selalu tebal, bukan cuma saat aktif),
+      target sentuh `min-h-14` per item, pill aktif berwarna
+      (`item.bg`/`item.color` per menu) menggantikan teks tipis.
+  - [x] `layout.tsx`: `viewport.viewportFit: "cover"` ditambah supaya
+      `env(safe-area-inset-bottom)` berfungsi; padding bawah nav & kontainer
+      halaman dihitung dari safe-area (`pb-[max(0.375rem,env(...))]` di nav,
+      `pb-[calc(4.5rem+env(...))]` di kontainer) — diverifikasi di viewport
+      320px & 375px, semua 5 label tetap penuh terbaca, tidak terpotong.
+
+Task berikutnya: fitur **Pasang Gambar dan Maskot Aplikasi** (masih layer
+frontend, fase 3 — bukan checkpoint, lanjut otomatis sesuai arahan user
+"jalankan semua"). Fitur ini butuh aset dari `assets/` di root repo.
 
 ## Catatan implementasi penting
 

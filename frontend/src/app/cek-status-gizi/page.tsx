@@ -16,6 +16,7 @@ import {
   faWeightHanging,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { BigNumber, BigWord } from "@/components/ui/big-number";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,30 +53,34 @@ import { getRiwayatByBalita, simpanRiwayatCek } from "@/lib/riwayat-store";
 
 const STATUS_STYLE: Record<
   StatusGizi,
-  { icon: IconDefinition; badge: string; ring: string }
+  { icon: IconDefinition; badge: string; ring: string; text: string }
 > = {
   normal: {
     icon: faCheckCircle,
     badge:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     ring: "ring-emerald-200 dark:ring-emerald-900",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   kurang: {
     icon: faTriangleExclamation,
     badge:
       "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     ring: "ring-amber-200 dark:ring-amber-900",
+    text: "text-amber-600 dark:text-amber-400",
   },
   buruk: {
     icon: faCircleExclamation,
     badge: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
     ring: "ring-rose-200 dark:ring-rose-900",
+    text: "text-rose-600 dark:text-rose-400",
   },
   pendek: {
     icon: faRulerVertical,
     badge:
       "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
     ring: "ring-violet-200 dark:ring-violet-900",
+    text: "text-violet-600 dark:text-violet-400",
   },
 };
 
@@ -323,20 +328,35 @@ function CekStatusGiziContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div
-                className={cn(
-                  "flex items-center gap-2 self-start rounded-full px-4 py-1.5 text-sm font-semibold",
-                  STATUS_STYLE[hasil.status].badge,
-                )}
-              >
-                <FontAwesomeIcon icon={STATUS_STYLE[hasil.status].icon} />
-                {STATUS_GIZI_LABEL[hasil.status]}
+              <div className="flex items-center gap-2.5">
+                <FontAwesomeIcon
+                  icon={STATUS_STYLE[hasil.status].icon}
+                  className={cn("size-6", STATUS_STYLE[hasil.status].text)}
+                />
+                <BigWord className={STATUS_STYLE[hasil.status].text}>
+                  {STATUS_GIZI_LABEL[hasil.status]}
+                </BigWord>
               </div>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 {STATUS_GIZI_DESKRIPSI[hasil.status]}
               </p>
 
               <Separator />
+
+              <div className="grid grid-cols-2 gap-4">
+                <BigNumber
+                  label="Berat badan"
+                  value={hasil.beratKg}
+                  unit="kg"
+                  valueClassName="text-emerald-600 dark:text-emerald-400"
+                />
+                <BigNumber
+                  label="Tinggi badan"
+                  value={hasil.tinggiCm}
+                  unit="cm"
+                  valueClassName="text-violet-600 dark:text-violet-400"
+                />
+              </div>
 
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
@@ -346,13 +366,7 @@ function CekStatusGiziContent() {
                         icon={faWeightHanging}
                         className="size-3.5 text-emerald-500"
                       />
-                      Berat badan
-                    </span>
-                    <span className="font-medium">
-                      {hasil.beratKg} kg{" "}
-                      <span className="text-zinc-400">
-                        / standar {hasil.beratIdealKg.toFixed(1)} kg
-                      </span>
+                      standar berat {hasil.beratIdealKg.toFixed(1)} kg
                     </span>
                   </div>
                   <Progress value={Math.min(hasil.rasioBerat * 100, 100)} />
@@ -365,13 +379,7 @@ function CekStatusGiziContent() {
                         icon={faRulerVertical}
                         className="size-3.5 text-violet-500"
                       />
-                      Tinggi badan
-                    </span>
-                    <span className="font-medium">
-                      {hasil.tinggiCm} cm{" "}
-                      <span className="text-zinc-400">
-                        / standar {hasil.tinggiIdealCm.toFixed(1)} cm
-                      </span>
+                      standar tinggi {hasil.tinggiIdealCm.toFixed(1)} cm
                     </span>
                   </div>
                   <Progress value={Math.min(hasil.rasioTinggi * 100, 100)} />

@@ -11,6 +11,7 @@ import {
   faVenus,
 } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BigNumber } from "@/components/ui/big-number";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -194,16 +195,29 @@ export default function BalitaPage() {
                     </Avatar>
                     <div className="flex-1">
                       <p className="text-sm font-semibold">{b.nama}</p>
-                      <p className="text-xs text-zinc-500">
-                        {formatUmur(umurBulan)} ·{" "}
-                        {b.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"}
-                      </p>
                       <p className="text-xs text-zinc-400">{b.posyandu}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <BalitaFormDialog mode="ubah" balita={b} />
                       <HapusBalitaButton balita={b} />
                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
+                    <BigNumber
+                      value={umurBulan}
+                      unit="bulan"
+                      valueClassName={cn(
+                        "text-xl sm:text-2xl",
+                        b.jenisKelamin === "L"
+                          ? "text-sky-600 dark:text-sky-400"
+                          : "text-pink-600 dark:text-pink-400",
+                      )}
+                    />
+                    <span className="text-xs text-zinc-500">
+                      {formatUmur(umurBulan)} ·{" "}
+                      {b.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"}
+                    </span>
                   </div>
 
                   <Button

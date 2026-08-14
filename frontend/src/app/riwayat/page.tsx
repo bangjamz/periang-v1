@@ -219,7 +219,7 @@ export default function RiwayatPage() {
                       <span className="text-zinc-500">
                         {entry.tanggalCek} · {formatUmur(entry.umurBulan)}
                       </span>
-                      <span>
+                      <span className="text-base font-bold tabular-nums">
                         {entry.beratKg} kg · {entry.tinggiCm} cm
                       </span>
                       <span
