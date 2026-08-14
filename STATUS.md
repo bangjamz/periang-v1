@@ -85,9 +85,23 @@ Sedang berjalan.
       pilih balita, balita terpilih belum punya riwayat (dengan CTA ke
       halaman terkait)
 
-Backend untuk Data Balita, Riwayat Cek, & Grafik (CRUD balita, dsb.) belum
-dikerjakan — menyusul setelah frontend fase ini selesai (frontend-first).
-Task berikutnya: fitur **Prediksi Risiko** (frontend).
+**Prediksi Risiko** (frontend, selesai semua):
+- [x] Halaman prediksi risiko dengan pilihan balita (`/prediksi`, form faktor
+      risiko: riwayat lahir, imunisasi, ASI eksklusif, sanitasi, pendapatan
+      keluarga opsional — `faktor-risiko-store.ts` localStorage)
+- [x] Logika skor risiko sederhana (`prediksi-risiko.ts`, placeholder
+      pengganti model AI — bobot per faktor + status gizi terakhir balita,
+      skor maks 11, ambang rendah/sedang/tinggi)
+- [x] Tampilkan hasil skor + faktor yang berkontribusi + badge tingkat risiko
+- [x] Tampilkan rekomendasi sesuai tingkat risiko (banner umum per tingkat
+      risiko + daftar rekomendasi per faktor)
+
+Backend untuk Data Balita, Riwayat Cek, Grafik, & Prediksi Risiko (CRUD
+balita, dsb.) belum dikerjakan — menyusul setelah frontend fase ini selesai
+(frontend-first). **Frontend Fase 2 selesai.** Task berikutnya: backend Fase
+2, dimulai dari **Data Balita** (migrasi tabel balita — tabel `balita` &
+model sudah ada dari Fase 1, kemungkinan perlu penyesuaian kolom untuk fitur
+tambahan seperti berat/tinggi lahir & alamat).
 
 ### Fase 3 — Login & Pengaturan
 Belum dimulai.

@@ -48,7 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/prediksi",
     label: "Prediksi",
     icon: faShieldHeart,
-    available: false,
+    available: true,
     color: "text-violet-500",
   },
 ];
