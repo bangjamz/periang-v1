@@ -149,9 +149,38 @@ Sedang berjalan.
 - [x] Halaman reset kata sandi dari tautan (`/reset-kata-sandi?token=...`,
       tautan tanpa token → pesan tidak valid)
 
-**Frontend Fase 3 selesai.** Task berikutnya: backend Fase 3, dimulai dari
-**migrasi tabel `users` & model pengguna** (autentikasi asli via Sanctum,
-menggantikan `auth-store.ts` tiruan).
+**Backend** (selesai semua):
+- [x] Migrasi tabel `users` & model pengguna: tambah kolom `posyandu`
+      (tabel `users` sudah ada dari scaffolding Laravel), seeder kader demo
+      diselaraskan dengan `DUMMY_KADER` frontend (`ratna.dewi@posyandu.id` /
+      `posyandu123`), relasi `User::balita()`
+- [x] API login & logout: `POST /api/login` (Sanctum personal access
+      token), `POST /api/logout` (cabut token aktif) — `AuthController`,
+      trait `HasApiTokens` di model `User`
+- [x] Middleware autentikasi API: semua endpoint data (`/balita`,
+      `/pemeriksaan`, `/standar-who`, `/faktor-risiko`, `/prediksi`,
+      `/profil`) dikelompokkan di bawah middleware `auth:sanctum`
+- [x] API profil pengguna: `GET/PUT /api/profil` (lihat & ubah nama +
+      posyandu kader yang sedang masuk) — `ProfilController`
+- [x] API ganti kata sandi: `PUT /api/profil/kata-sandi` (validasi
+      `current_password` bawaan Laravel + `confirmed`)
+- [x] API lupa kata sandi dengan email: `POST /api/lupa-kata-sandi`
+      (Laravel password broker, `MAIL_MAILER=log` di lokal — tautan email
+      dibuat mengarah ke `FRONTEND_URL/reset-kata-sandi?token=&email=` lewat
+      `ResetPassword::createUrlUsing()` di `AppServiceProvider`); selalu
+      balas pesan generik supaya tidak bisa dipakai menebak email terdaftar
+- [x] API atur ulang kata sandi: `POST /api/reset-kata-sandi` (konsumsi
+      token password broker, token sekali pakai & kedaluwarsa 60 menit)
+
+78 test (unit + feature) lolos. Jalankan `php artisan test` dari `backend/`.
+
+**Backend Fase 3 selesai — seluruh plan PERIANG (Fase 1–3) selesai.**
+Task berikutnya: **wiring frontend ke API backend** (ganti localStorage
+`auth-store.ts`/`kader-store.ts`/`balita-store.ts`/dst. dengan pemanggilan
+API asli + token Sanctum) — lihat catatan implementasi di bawah untuk daftar
+titik yang perlu diganti. Ini belum termasuk task terpisah di plan
+NgodingPakeAI; jalankan `task next` lagi setelah reconnect untuk konfirmasi
+apakah ada task lanjutan yang baru muncul.
 
 ## Catatan implementasi penting
 
@@ -179,9 +208,17 @@ menggantikan `auth-store.ts` tiruan).
   tambahkan prop `nativeButton={false}` — kalau lupa, muncul console error +
   badge "1 Issue" di dev overlay Next.js (sudah 2x kejadian, dicatat di sini
   supaya tidak terulang).
-- Login masih **tiruan** (`auth-store.ts`, `kader-store.ts`, localStorage) —
-  satu akun kader hardcode, tanpa hashing/session asli. Akan diganti Sanctum
-  saat backend Fase 3 (tabel `users`, endpoint login) selesai & di-wiring.
+- Login masih **tiruan di frontend** (`auth-store.ts`, `kader-store.ts`,
+  localStorage) — backend Sanctum (`POST /api/login`, `/api/logout`,
+  `/api/profil`, dst.) sudah selesai & teruji, tapi frontend belum
+  di-wiring untuk memanggilnya. Kredensial dummy frontend
+  (`ratna.dewi@posyandu.id` / `posyandu123`) sengaja disamakan dengan
+  seeder backend supaya wiring nanti tinggal ganti implementasi
+  `auth-store.ts` tanpa perlu ubah UI.
+- **Semua endpoint API kini butuh autentikasi** (`auth:sanctum`) kecuali
+  `/api/login`, `/api/lupa-kata-sandi`, `/api/reset-kata-sandi`. Setelah
+  wiring frontend, request ke `/api/balita`, `/api/pemeriksaan`, dll. wajib
+  menyertakan header `Authorization: Bearer <token>` dari hasil login.
 - **Bug penting yang sudah diperbaiki**: `RouteGuard` (`route-guard.tsx`)
   sempat salah redirect ke `/masuk` walau user sudah login, karena efeknya
   membaca nilai `isLoggedIn` dari render pertama `useSyncExternalStore` yang

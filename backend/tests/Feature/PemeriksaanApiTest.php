@@ -6,11 +6,18 @@ use App\Models\Balita;
 use App\Models\Pemeriksaan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PemeriksaanApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_lists_riwayat_sorted_by_newest_check_date(): void
     {

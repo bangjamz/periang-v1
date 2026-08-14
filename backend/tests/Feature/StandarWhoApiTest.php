@@ -2,13 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Database\Seeders\StandarWhoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class StandarWhoApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_returns_standar_pertumbuhan_for_jenis_kelamin(): void
     {
