@@ -17,6 +17,7 @@ class Balita extends Model
         'user_id',
         'nama',
         'jenis_kelamin',
+        'posyandu',
         'tanggal_lahir',
         'berat_lahir',
         'tinggi_lahir',

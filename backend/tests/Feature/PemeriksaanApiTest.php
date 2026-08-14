@@ -19,6 +19,7 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Ahmad Fauzi',
             'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2024-03-12',
         ]);
 
@@ -50,6 +51,41 @@ class PemeriksaanApiTest extends TestCase
         $response->assertJsonPath('0.balita.nama', 'Ahmad Fauzi');
     }
 
+    public function test_shows_a_single_pemeriksaan(): void
+    {
+        $user = User::factory()->create();
+        $balita = Balita::create([
+            'user_id' => $user->id,
+            'nama' => 'Ahmad Fauzi',
+            'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
+            'tanggal_lahir' => '2024-03-12',
+        ]);
+
+        $pemeriksaan = Pemeriksaan::create([
+            'balita_id' => $balita->id,
+            'umur_bulan' => 10,
+            'berat_kg' => 8.0,
+            'tinggi_cm' => 70,
+            'status_gizi' => 'normal',
+            'tanggal_cek' => '2026-06-01',
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->getJson("/api/pemeriksaan/{$pemeriksaan->id}");
+
+        $response->assertOk();
+        $response->assertJsonPath('id', $pemeriksaan->id);
+        $response->assertJsonPath('balita.nama', 'Ahmad Fauzi');
+    }
+
+    public function test_shows_404_for_unknown_pemeriksaan(): void
+    {
+        $response = $this->getJson('/api/pemeriksaan/999');
+
+        $response->assertNotFound();
+    }
+
     public function test_filters_riwayat_by_balita_id(): void
     {
         $user = User::factory()->create();
@@ -58,12 +94,14 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Ahmad Fauzi',
             'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2024-03-12',
         ]);
         $balitaB = Balita::create([
             'user_id' => $user->id,
             'nama' => 'Siti Aisyah',
             'jenis_kelamin' => 'P',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2023-11-05',
         ]);
 
@@ -101,6 +139,7 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Ahmad Fauzi',
             'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => now()->subMonths(12)->toDateString(),
         ]);
 
@@ -131,6 +170,7 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Siti Aisyah',
             'jenis_kelamin' => 'P',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2024-03-17',
         ]);
 
@@ -165,6 +205,7 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Ahmad Fauzi',
             'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2024-03-12',
         ]);
 
@@ -186,6 +227,7 @@ class PemeriksaanApiTest extends TestCase
             'user_id' => $user->id,
             'nama' => 'Ahmad Fauzi',
             'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
             'tanggal_lahir' => '2024-03-12',
         ]);
 
@@ -209,5 +251,100 @@ class PemeriksaanApiTest extends TestCase
         $response->assertJsonFragment(['Tanggal pemeriksaan wajib diisi.']);
         $response->assertJsonFragment(['Berat badan wajib diisi.']);
         $response->assertJsonFragment(['Tinggi badan wajib diisi.']);
+    }
+
+    public function test_updates_pemeriksaan_and_recomputes_status(): void
+    {
+        $user = User::factory()->create();
+        $balita = Balita::create([
+            'user_id' => $user->id,
+            'nama' => 'Ahmad Fauzi',
+            'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
+            'tanggal_lahir' => '2024-03-12',
+        ]);
+
+        $pemeriksaan = Pemeriksaan::create([
+            'balita_id' => $balita->id,
+            'umur_bulan' => 10,
+            'berat_kg' => 8.0,
+            'tinggi_cm' => 70,
+            'status_gizi' => 'normal',
+            'tanggal_cek' => '2026-01-12',
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->putJson("/api/pemeriksaan/{$pemeriksaan->id}", [
+            'tanggal_cek' => '2026-01-12',
+            'berat_kg' => 4.0,
+            'tinggi_cm' => 60,
+            'catatan' => 'Perlu pemantauan lebih rutin.',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('pemeriksaan.berat_kg', '4.00');
+        $response->assertJsonPath('pemeriksaan.catatan', 'Perlu pemantauan lebih rutin.');
+        $this->assertDatabaseHas('pemeriksaan', [
+            'id' => $pemeriksaan->id,
+            'catatan' => 'Perlu pemantauan lebih rutin.',
+        ]);
+    }
+
+    public function test_rejects_updating_pemeriksaan_with_tanggal_cek_before_birth(): void
+    {
+        $user = User::factory()->create();
+        $balita = Balita::create([
+            'user_id' => $user->id,
+            'nama' => 'Ahmad Fauzi',
+            'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
+            'tanggal_lahir' => '2024-03-12',
+        ]);
+
+        $pemeriksaan = Pemeriksaan::create([
+            'balita_id' => $balita->id,
+            'umur_bulan' => 10,
+            'berat_kg' => 8.0,
+            'tinggi_cm' => 70,
+            'status_gizi' => 'normal',
+            'tanggal_cek' => '2026-01-12',
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->putJson("/api/pemeriksaan/{$pemeriksaan->id}", [
+            'tanggal_cek' => '2023-01-01',
+            'berat_kg' => 8.0,
+            'tinggi_cm' => 70,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonFragment(['Tanggal pemeriksaan tidak boleh sebelum tanggal lahir balita.']);
+    }
+
+    public function test_deletes_pemeriksaan(): void
+    {
+        $user = User::factory()->create();
+        $balita = Balita::create([
+            'user_id' => $user->id,
+            'nama' => 'Ahmad Fauzi',
+            'jenis_kelamin' => 'L',
+            'posyandu' => 'Posyandu Melati 1',
+            'tanggal_lahir' => '2024-03-12',
+        ]);
+
+        $pemeriksaan = Pemeriksaan::create([
+            'balita_id' => $balita->id,
+            'umur_bulan' => 10,
+            'berat_kg' => 8.0,
+            'tinggi_cm' => 70,
+            'status_gizi' => 'normal',
+            'tanggal_cek' => '2026-01-12',
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->deleteJson("/api/pemeriksaan/{$pemeriksaan->id}");
+
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('pemeriksaan', ['id' => $pemeriksaan->id]);
     }
 }

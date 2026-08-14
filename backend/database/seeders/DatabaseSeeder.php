@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(BalitaSeeder::class);
+        $this->call(StandarWhoSeeder::class);
     }
 }

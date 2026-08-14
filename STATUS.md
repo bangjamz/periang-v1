@@ -96,15 +96,38 @@ Sedang berjalan.
 - [x] Tampilkan rekomendasi sesuai tingkat risiko (banner umum per tingkat
       risiko + daftar rekomendasi per faktor)
 
-Backend untuk Data Balita, Riwayat Cek, Grafik, & Prediksi Risiko (CRUD
-balita, dsb.) belum dikerjakan — menyusul setelah frontend fase ini selesai
-(frontend-first). **Frontend Fase 2 selesai.** Task berikutnya: backend Fase
-2, dimulai dari **Data Balita** (migrasi tabel balita — tabel `balita` &
-model sudah ada dari Fase 1, kemungkinan perlu penyesuaian kolom untuk fitur
-tambahan seperti berat/tinggi lahir & alamat).
+**Backend** (selesai semua):
+- [x] Data Balita: migrasi tambahan kolom `posyandu` di tabel `balita`
+      (tabel & sebagian kolom sudah ada dari Fase 1), model & seeder
+      diselaraskan; CRUD penuh (`GET/POST /api/balita`,
+      `GET/PUT/DELETE /api/balita/{id}`) dengan validasi bahasa Indonesia;
+      pencarian `?q=` case-insensitive (nama & posyandu, aman untuk
+      PostgreSQL maupun SQLite lewat `LOWER(...) LIKE`)
+- [x] Riwayat Cek: tabel `pemeriksaan` sudah lengkap dari Fase 1; tambah
+      endpoint detail (`GET /api/pemeriksaan/{id}`), ubah & hapus
+      (`PUT`/`DELETE /api/pemeriksaan/{id}` — status gizi dihitung ulang
+      otomatis saat ubah)
+- [x] Grafik Pertumbuhan: tabel baru `standar_who` (median berat/tinggi WHO
+      per bulan usia 0–60, per jenis kelamin) + seeder + endpoint
+      `GET /api/standar-who?jenis_kelamin=`; titik referensi WHO
+      diekstrak ke `App\Support\StandarPertumbuhanWho` (dipakai bareng oleh
+      `StatusGiziService` & seeder, tidak ada duplikasi data)
+- [x] Prediksi Risiko: tabel & model `FaktorRisiko` (satu baris per balita,
+      upsert lewat `PUT /api/balita/{id}/faktor-risiko`); service
+      `PrediksiRisikoService` — port 1:1 dari logika skor frontend
+      (`prediksi-risiko.ts`) ke PHP; endpoint
+      `GET /api/balita/{id}/prediksi` menghitung skor dari faktor risiko +
+      status gizi pemeriksaan terakhir balita
+
+49 test (unit + feature) lolos. Jalankan `php artisan test` dari `backend/`.
+
+**Backend Fase 2 selesai.** Frontend masih pakai data localStorage (belum
+di-wiring ke API backend — lihat catatan implementasi). Task berikutnya:
+**Fase 3 — Login & Pengaturan** (frontend, dimulai dari layout utama
+aplikasi).
 
 ### Fase 3 — Login & Pengaturan
-Belum dimulai.
+Sedang berjalan (baru mulai, frontend).
 
 ## Catatan implementasi penting
 
