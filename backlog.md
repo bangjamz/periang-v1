@@ -5,10 +5,12 @@ sudah `done: true` — semua 36 task Fase 4 + Fase 1-3 selesai), dikumpulkan
 dari diskusi & kebutuhan yang muncul setelah plan pertama rampung. File ini
 adalah sumber untuk PRD/task batch berikutnya.
 
-Status per 2026-08-14: **belum dikirim ke server NgodingPakeAI.** Kirim
-lewat prompt di bagian bawah file ini (atau versi yang sudah diedit sesuai
-prioritas terbaru), lalu update status di sini jadi "Sudah dikirim ke
-server — lihat [docs/prd/](docs/prd/)".
+Status per 2026-08-14: **belum dikirim ke server NgodingPakeAI.** CLI
+`ngodingpakeai` tidak punya perintah untuk membuat task/PRD baru (hanya
+bisa pull task yang sudah ada) — jadi pengiriman **wajib manual**: salin
+prompt di bagian bawah file ini ke chat/PRD-input di aplikasi
+NgodingPakeAI. File ini akan selalu dijaga up-to-date setiap ada temuan
+task baru, dan di-push ke GitHub setiap perubahan.
 
 ---
 
@@ -50,31 +52,53 @@ Ditemukan saat user tanya soal email (2026-08-14).
 ## Epic 3 — Model Prediksi Risiko (Champion ML Algorithm) ⭐ PRIORITAS
 
 **Kenapa:** ini prioritas paling penting menurut user (dicatat sejak
-2026-08-14 di [STATUS.md](STATUS.md), sengaja belum dikirim ke server
-supaya tidak bentrok dengan 36 task Fase 4 yang saat itu masih berjalan —
-sekarang plan itu sudah selesai, jadi ini kandidat utama batch berikutnya).
+2026-08-14 di [STATUS.md](STATUS.md)). **Diriset penuh 2026-08-14** — model
+asli ditemukan & diverifikasi bisa jalan (bukan lagi rencana abstrak). Detail
+teknis lengkap: [docs/champion-model-integration.md](docs/champion-model-integration.md).
 
-- **Kondisi saat ini:** `backend/app/Services/PrediksiRisikoService.php`
-  masih rule-based placeholder (skor berbobot manual per faktor risiko,
-  bukan model ML asli).
-- **Rencana sesuai PRD v9 (bagian Architecture):** backend memanggil model
-  champion ML milik user lewat **InsForge Model Gateway** (atau gateway
-  lain) untuk menghitung tingkat risiko gizi kurang dari faktor risiko
-  balita.
-- **Kontrak yang harus dipertahankan:** endpoint `GET
-  /api/balita/{id}/prediksi` — response `skor`, `tingkat_risiko`,
-  `faktor_kontribusi`, `rekomendasi_umum`, `rekomendasi` — supaya frontend
-  (`prediksi/page.tsx`, `prediksi-risiko.ts`) tidak perlu berubah.
+- **Sumber model:** `disertasi-ita-2022-2024/model/champion_model_2022_2024.pkl`
+  — Gradient Boosting (scikit-learn 1.7.2), hasil riset disertasi Ropitasari
+  (SSGI 2022+2024, Time-Shift Validation). Recall 0.86, AUC 0.68, threshold
+  klasifikasi 0.16 (bukan 0.5 — sengaja rendah demi sensitivitas skrining).
+  **Sudah diverifikasi bisa di-load & prediksi** dengan `scikit-learn==1.7.2`
+  + `joblib`.
+- **Kondisi saat ini di PERIANG:**
+  `backend/app/Services/PrediksiRisikoService.php` masih rule-based
+  placeholder (skor berbobot manual, bukan model ML asli).
+- **Temuan penting:** model butuh **21 fitur granular** (pekerjaan &
+  pendidikan ortu, sanitasi rinci, berat/panjang/usia kandungan lahir,
+  jenis imunisasi spesifik, dll — daftar lengkap di dokumen teknis). Tabel
+  `faktor_risiko` PERIANG saat ini cuma punya **5 field kasar**. Perlu
+  keputusan: perluas skema+form ke 21 field (akurat, form lebih panjang)
+  atau isi field yang hilang dengan nilai default (form tetap sederhana,
+  akurasi berkurang). Lihat dokumen teknis bagian 5 untuk detail opsi.
+- **Model adalah file Python (`.pkl`) — Laravel tidak bisa menjalankannya
+  langsung.** Rencana arsitektur: microservice Python kecil (FastAPI) yang
+  load model & expose `POST /predict`, dipanggil dari
+  `PrediksiRisikoService` lewat HTTP. Kontrak endpoint
+  `GET /api/balita/{id}/prediksi` (skor, tingkat_risiko,
+  faktor_kontribusi, rekomendasi_umum, rekomendasi) dipertahankan supaya
+  frontend tidak perlu berubah.
 
-- [ ] **Integrasikan model prediksi risiko champion ML ke
-      `PrediksiRisikoService`** — ganti/bungkus logika rule-based dengan
-      pemanggilan ke InsForge Model Gateway (atau gateway lain yang
-      ditentukan user), pertahankan kontrak response endpoint
-      `GET /api/balita/{id}/prediksi` di atas.
-- [ ] **Tangani fallback saat model/gateway tidak tersedia** — kalau
-      panggilan ke gateway gagal/timeout, tentukan perilaku (fallback ke
-      rule-based lama, atau pesan error yang jelas ke frontend) supaya
-      fitur Cek Status Gizi & Prediksi Risiko tidak ikut rusak.
+- [ ] **Putuskan skema Faktor Risiko: fidelitas penuh (21 field) atau
+      mapping perkiraan (5 field + default)** — keputusan user, menentukan
+      scope 2 task di bawah.
+- [ ] **Migration + form Faktor Risiko diperluas ke field granular** (kalau
+      pilih fidelitas penuh) — kolom baru di tabel `faktor_risiko` sesuai
+      21 fitur model, form `faktor-risiko-form.tsx` diperluas dengan
+      dropdown berbahasa manusia (bukan kode SSGI mentah).
+- [ ] **Bangun microservice Python untuk serving model** — FastAPI/Flask,
+      load `champion_model_2022_2024.pkl` (pin `scikit-learn==1.7.2` +
+      `joblib`), endpoint `POST /predict` terima 21 fitur → balikin
+      probabilitas + klasifikasi risiko (threshold 0.16).
+- [ ] **Integrasikan `PrediksiRisikoService` ke microservice** — ganti
+      logika rule-based dengan pemanggilan HTTP ke microservice,
+      pertahankan kontrak response endpoint
+      `GET /api/balita/{id}/prediksi` di atas. Tangani fallback kalau
+      microservice tidak terjangkau (mis. fallback ke rule-based lama +
+      log error) supaya fitur Prediksi Risiko tidak ikut rusak total.
+- [ ] **Deploy microservice ke VPS** — jalan sebagai service terpisah
+      (systemd/pm2/docker) di samping Laravel & Next.js, lihat Epic 4.
 
 ## Epic 4 — Deployment Produksi ke VPS
 
@@ -120,15 +144,19 @@ Update PRD PERIANG (Prediksi dan Analisis Balita Gizi Kurang) — tambahkan
 sudah done, tech stack: Laravel + PostgreSQL + Next.js + VPS):
 
 1. Model Prediksi Risiko (Champion ML Algorithm) — PRIORITAS UTAMA.
-   Saat ini backend/app/Services/PrediksiRisikoService.php masih
-   rule-based placeholder. Ganti dengan pemanggilan ke InsForge Model
-   Gateway (atau gateway lain) untuk menghitung tingkat risiko gizi
-   kurang dari faktor risiko balita, memakai model champion ML milik
-   saya. Pertahankan kontrak response endpoint
-   GET /api/balita/{id}/prediksi (skor, tingkat_risiko,
-   faktor_kontribusi, rekomendasi_umum, rekomendasi) supaya frontend
-   tidak perlu berubah. Sertakan penanganan fallback kalau
-   gateway/model gagal atau timeout.
+   Saya sudah punya model asli hasil riset disertasi (Gradient Boosting,
+   scikit-learn 1.7.2, file champion_model_2022_2024.pkl, sudah
+   diverifikasi bisa jalan). Model butuh 21 fitur granular yang belum
+   semuanya ada di tabel faktor_risiko PERIANG (saat ini cuma 5 field
+   kasar) — lihat docs/champion-model-integration.md untuk daftar
+   lengkap & opsi implementasi. Karena model adalah file Python, buat
+   microservice Python (FastAPI) yang load model & expose endpoint
+   prediksi, lalu backend/app/Services/PrediksiRisikoService.php
+   memanggilnya lewat HTTP menggantikan logika rule-based saat ini.
+   Pertahankan kontrak response endpoint GET /api/balita/{id}/prediksi
+   (skor, tingkat_risiko, faktor_kontribusi, rekomendasi_umum,
+   rekomendasi) supaya frontend tidak perlu berubah. Sertakan
+   penanganan fallback kalau microservice tidak terjangkau.
 
 2. Pendaftaran Akun Kader (self-registration). Saat ini akun kader
    cuma bisa dibuat manual (seeder/tinker), belum ada API register.
