@@ -92,7 +92,11 @@ export default function MasukPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col lg:flex-row">
+    // Breakout dari app-shell (dibatasi max-w-5xl di layout.tsx untuk
+    // halaman internal) supaya split hero+form memenuhi lebar layar penuh
+    // di desktop, bukan terjepit sempit di tengah dengan banyak ruang
+    // kosong kiri-kanan.
+    <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-1 flex-col lg:flex-row">
       <div className="relative hidden shrink-0 overflow-hidden lg:block lg:w-[42%]">
         <Image
           src="/images/hero/hero-web.webp"
