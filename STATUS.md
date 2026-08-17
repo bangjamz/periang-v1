@@ -8,12 +8,12 @@ NgodingPakeAI. Setelah reconnect, sinkronkan checklist ini dengan hasil
 - **Repo**: https://github.com/bangjamz/periang-v1
 - **Tech stack**: Next.js (frontend) · Laravel + PostgreSQL (backend) · deploy VPS
 
-## ⭐ In Progress — Model Prediksi Risiko (champion ML algorithm)
+## ⭐ SELESAI (MVP) — Model Prediksi Risiko (champion ML algorithm)
 
-**Status per 2026-08-14: model asli DITEMUKAN & DIVERIFIKASI bisa jalan —
-implementasi sedang berjalan di sesi lokal.** Sebelumnya cuma dicatat
-sebagai rencana; sekarang sudah PRD resmi + riset teknis lengkap, belum
-dikirim ke server NgodingPakeAI (task loop lokal, di luar plan v9).
+**Status per 2026-08-17: implementasi inti SELESAI & diverifikasi
+end-to-end** di sesi lokal (dikerjakan langsung, di luar task loop
+NgodingPakeAI — plan v9 sudah `done: true`). `PrediksiRisikoService` kini
+memanggil model ML asli, bukan lagi rule-based placeholder.
 
 - **Model ditemukan di**: `disertasi-ita-2022-2024/model/champion_model_2022_2024.pkl`
   — Gradient Boosting (scikit-learn **1.7.2**, wajib versi persis), recall
@@ -35,8 +35,21 @@ dikirim ke server NgodingPakeAI (task loop lokal, di luar plan v9).
   - PRD resmi: [docs/prd/prd-v10-2026-08-14.md](docs/prd/prd-v10-2026-08-14.md)
   - Bahan Bab IV disertasi: [docs/bab4-implementasi-model-periang.md](docs/bab4-implementasi-model-periang.md)
   - Checklist task: [backlog.md](backlog.md) Epic 3
-- **Next step**: implementasi migration 21 field + form baru + microservice
-  Python + integrasi `PrediksiRisikoService` — sedang dikerjakan.
+  - Microservice: [ml-service/](ml-service/) (FastAPI, `README.md` di
+    dalamnya untuk cara jalanin lokal)
+- **Yang sudah selesai**: migration 16 field baru, `faktor-risiko-form.tsx`
+  diperluas, `ml-service/` (FastAPI + model + imputasi median), integrasi
+  penuh `PrediksiRisikoService` ke microservice dengan fallback 503.
+  Diverifikasi lewat browser sungguhan (login → isi form → simpan → hasil
+  prediksi dari model ML asli tampil dengan BigWord/BigNumber).
+- **Yang masih tersisa** (lihat backlog.md Epic 3): (1) buku kode SSGI
+  resmi belum ada — 13 dari 16 field baru masih input kode angka mentah,
+  bukan dropdown berlabel; (2) deploy `ml-service/` ke VPS produksi; (3)
+  opsional — SHAP per-instance asli untuk `faktor_kontribusi` (saat ini
+  masih heuristik sederhana).
+- **Setup lokal**: backend butuh `ML_SERVICE_URL` di `.env` (default
+  `http://127.0.0.1:8020`), microservice dijalankan terpisah dari
+  `ml-service/` (`uvicorn main:app --port 8020`, lihat `ml-service/README.md`).
 
 ## Setup lokal
 

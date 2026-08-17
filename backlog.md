@@ -49,12 +49,13 @@ Ditemukan saat user tanya soal email (2026-08-14).
       saat ada balita berstatus gizi buruk/kurang setelah pemeriksaan
       tersimpan.
 
-## Epic 3 — Model Prediksi Risiko (Champion ML Algorithm) ⭐ PRIORITAS
+## Epic 3 — Model Prediksi Risiko (Champion ML Algorithm) ⭐ SELESAI (MVP)
 
-**Kenapa:** ini prioritas paling penting menurut user (dicatat sejak
-2026-08-14 di [STATUS.md](STATUS.md)). **Diriset penuh 2026-08-14** — model
-asli ditemukan & diverifikasi bisa jalan (bukan lagi rencana abstrak). Detail
-teknis lengkap: [docs/champion-model-integration.md](docs/champion-model-integration.md).
+**Status 2026-08-17: implementasi inti SELESAI & diverifikasi end-to-end**
+di sesi lokal (bukan lewat NgodingPakeAI — dikerjakan langsung atas
+instruksi user). Detail teknis lengkap:
+[docs/champion-model-integration.md](docs/champion-model-integration.md),
+PRD: [docs/prd/prd-v10-2026-08-14.md](docs/prd/prd-v10-2026-08-14.md).
 
 - **Sumber model:** `disertasi-ita-2022-2024/model/champion_model_2022_2024.pkl`
   — Gradient Boosting (scikit-learn 1.7.2), hasil riset disertasi Ropitasari
@@ -80,25 +81,35 @@ teknis lengkap: [docs/champion-model-integration.md](docs/champion-model-integra
   faktor_kontribusi, rekomendasi_umum, rekomendasi) dipertahankan supaya
   frontend tidak perlu berubah.
 
-- [ ] **Putuskan skema Faktor Risiko: fidelitas penuh (21 field) atau
-      mapping perkiraan (5 field + default)** — keputusan user, menentukan
-      scope 2 task di bawah.
-- [ ] **Migration + form Faktor Risiko diperluas ke field granular** (kalau
-      pilih fidelitas penuh) — kolom baru di tabel `faktor_risiko` sesuai
-      21 fitur model, form `faktor-risiko-form.tsx` diperluas dengan
-      dropdown berbahasa manusia (bukan kode SSGI mentah).
-- [ ] **Bangun microservice Python untuk serving model** — FastAPI/Flask,
-      load `champion_model_2022_2024.pkl` (pin `scikit-learn==1.7.2` +
-      `joblib`), endpoint `POST /predict` terima 21 fitur → balikin
-      probabilitas + klasifikasi risiko (threshold 0.16).
-- [ ] **Integrasikan `PrediksiRisikoService` ke microservice** — ganti
-      logika rule-based dengan pemanggilan HTTP ke microservice,
-      pertahankan kontrak response endpoint
-      `GET /api/balita/{id}/prediksi` di atas. Tangani fallback kalau
-      microservice tidak terjangkau (mis. fallback ke rule-based lama +
-      log error) supaya fitur Prediksi Risiko tidak ikut rusak total.
+- [x] **Putuskan skema Faktor Risiko: fidelitas penuh (21 field) atau
+      mapping perkiraan (5 field + default)** — user pilih **fidelitas
+      penuh**, 5 field lama dipertahankan (tidak dihapus).
+- [x] **Migration + form Faktor Risiko diperluas ke field granular** — 16
+      kolom baru ditambahkan (`add_model_fields_to_faktor_risiko_table`),
+      `faktor-risiko-form.tsx` diperluas. Catatan: 13 dari 16 field masih
+      berupa **input kode angka mentah** (bukan dropdown berlabel) karena
+      buku kode kuesioner SSGI resmi belum ditemukan — lihat item baru di
+      bawah.
+- [x] **Bangun microservice Python untuk serving model** —
+      `ml-service/main.py` (FastAPI), pin `scikit-learn==1.7.2`, endpoint
+      `POST /predict` dengan imputasi median otomatis untuk field kosong.
+- [x] **Integrasikan `PrediksiRisikoService` ke microservice** — rule-based
+      diganti total, fallback 503 + pesan jelas kalau microservice mati
+      (diverifikasi langsung: connection refused → 503, bukan 500 crash).
+- [ ] **Cari/dapatkan buku kode (codebook) resmi kuesioner SSGI 2022/2024**
+      — supaya 13 field kode mentah (pekerjaan/pendidikan ortu, jenis
+      jamban, sumber air, dll — daftar lengkap di
+      `docs/champion-model-integration.md`) bisa diganti jadi dropdown
+      berlabel manusia, bukan angka kode tanpa keterangan. User perlu cari
+      dokumen kuesioner SSGI resmi (BPS/Kemenkes/BKKBN) atau hubungi tim
+      SSGI.
 - [ ] **Deploy microservice ke VPS** — jalan sebagai service terpisah
       (systemd/pm2/docker) di samping Laravel & Next.js, lihat Epic 4.
+- [ ] **(Opsional) Real SHAP per-instance untuk faktor_kontribusi** — saat
+      ini `faktor_kontribusi` di response API cuma heuristik sederhana
+      (BBLR, prematur, jumlah field kosong), bukan SHAP value asli per
+      balita. Bisa ditingkatkan nanti kalau dibutuhkan penjelasan lebih
+      detail per prediksi.
 
 ## Epic 4 — Deployment Produksi ke VPS
 
