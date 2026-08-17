@@ -2,9 +2,14 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faFloppyDisk,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/ui/error-message";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import {
   FaktorRisiko,
+  FaktorRisikoModel,
   getFaktorRisikoByBalita,
   PendapatanKeluarga,
   RiwayatLahir,
@@ -62,6 +68,57 @@ function bikinSelect<T extends string>(
 
 type LabelMap<T extends string> = Record<T, string>;
 
+/**
+ * 16 field granular untuk champion model ML. `kode: true` = field belum
+ * punya buku kode SSGI resmi (lihat docs/champion-model-integration.md di
+ * root repo) — ditampilkan sebagai input angka kode mentah, bukan dropdown
+ * berlabel, sampai codebook resmi tersedia.
+ */
+const FIELD_MODEL: {
+  key: keyof FaktorRisikoModel;
+  label: string;
+  kode?: boolean;
+  unit?: string;
+  min?: number;
+  max?: number;
+}[] = [
+  {
+    key: "usiaKandunganMinggu",
+    label: "Usia Kandungan Saat Lahir",
+    unit: "minggu",
+    min: 20,
+    max: 45,
+  },
+  { key: "jumlahArt", label: "Jumlah Anggota Rumah Tangga", min: 1, max: 50 },
+  {
+    key: "jumlahBalitaRt",
+    label: "Jumlah Balita dalam Rumah Tangga",
+    min: 1,
+    max: 20,
+  },
+  { key: "pekerjaanAyah", label: "Pekerjaan Ayah", kode: true },
+  { key: "pekerjaanIbu", label: "Pekerjaan Ibu", kode: true },
+  { key: "pendidikanAyah", label: "Pendidikan Ayah", kode: true },
+  { key: "pendidikanIbu", label: "Pendidikan Ibu", kode: true },
+  { key: "kepemilikanJamban", label: "Kepemilikan Jamban", kode: true },
+  { key: "sumberAirMinum", label: "Sumber Air Minum", kode: true },
+  { key: "lokasiAirMinum", label: "Lokasi Sumber Air Minum", kode: true },
+  {
+    key: "pembuanganLimbahCair",
+    label: "Pembuangan Limbah Cair",
+    kode: true,
+  },
+  { key: "pembuanganTinja", label: "Pembuangan Tinja", kode: true },
+  { key: "kepemilikanBukuKia", label: "Kepemilikan Buku KIA", kode: true },
+  { key: "imunisasiHb0", label: "Imunisasi Hepatitis B0", kode: true },
+  { key: "imunisasiBcg", label: "Imunisasi BCG", kode: true },
+  {
+    key: "imunisasiDptHbHibLanjutan",
+    label: "Imunisasi DPT-HB-Hib Lanjutan",
+    kode: true,
+  },
+];
+
 export function FaktorRisikoForm({
   balitaId,
   onSaved,
@@ -90,6 +147,7 @@ export function FaktorRisikoForm({
   const [pendapatanKeluarga, setPendapatanKeluarga] = useState<
     PendapatanKeluarga | ""
   >(existing?.pendapatanKeluarga ?? "");
+  const [model, setModel] = useState<FaktorRisikoModel>(existing ?? {});
   const [tersimpan, setTersimpan] = useState(false);
   const [menyimpan, setMenyimpan] = useState(false);
   const [pesanGagal, setPesanGagal] = useState("");
@@ -103,6 +161,7 @@ export function FaktorRisikoForm({
     setAsiEksklusif(existing.asiEksklusif);
     setSanitasi(existing.sanitasi);
     setPendapatanKeluarga(existing.pendapatanKeluarga ?? "");
+    setModel(existing);
   }, [existing]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -111,6 +170,14 @@ export function FaktorRisikoForm({
     imunisasi !== "" &&
     asiEksklusif !== "" &&
     sanitasi !== "";
+
+  function handleChangeModel(key: keyof FaktorRisikoModel, raw: string) {
+    setModel((prev) => ({
+      ...prev,
+      [key]: raw === "" ? undefined : Number(raw),
+    }));
+    setTersimpan(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -124,6 +191,7 @@ export function FaktorRisikoForm({
       asiEksklusif: asiEksklusif as StatusYaTidak,
       sanitasi: sanitasi as Sanitasi,
       pendapatanKeluarga: pendapatanKeluarga || undefined,
+      ...model,
     });
     setMenyimpan(false);
 
@@ -269,6 +337,56 @@ export function FaktorRisikoForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-dashed p-4">
+        <div className="flex items-start gap-2">
+          <FontAwesomeIcon
+            icon={faTriangleExclamation}
+            className="mt-0.5 size-3.5 shrink-0 text-amber-500"
+          />
+          <div>
+            <p className="text-sm font-semibold">
+              Data untuk Model Prediksi ML (opsional)
+            </p>
+            <p className="text-xs text-zinc-500">
+              Semua boleh dikosongkan (diisi bertahap) — makin lengkap, makin
+              akurat hasil prediksi risiko. Field bertanda{" "}
+              <span className="font-medium">kode</span> memakai kode kuesioner
+              SSGI mentah (belum ada label karena buku kode resmi belum
+              tersedia).
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {FIELD_MODEL.map((f) => (
+            <div key={f.key} className="flex flex-col gap-1.5">
+              <Label htmlFor={`model-${f.key}`} className="text-xs">
+                {f.label}
+                {f.kode && <span className="ml-1 text-zinc-400">(kode)</span>}
+              </Label>
+              <div className="relative">
+                <Input
+                  id={`model-${f.key}`}
+                  type="number"
+                  inputMode="numeric"
+                  min={f.min ?? 0}
+                  max={f.max ?? 20}
+                  placeholder={f.kode ? "Kode" : "-"}
+                  value={model[f.key] ?? ""}
+                  onChange={(e) => handleChangeModel(f.key, e.target.value)}
+                  className={f.unit ? "pr-14" : undefined}
+                />
+                {f.unit && (
+                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-zinc-400">
+                    {f.unit}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

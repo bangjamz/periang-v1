@@ -1,0 +1,23 @@
+{
+  "jenis_kelamin": 0.0,
+  "umur_bulan": 36.0,
+  "jumlah_art": 4.0,
+  "jumlah_balita_rt": 1.0,
+  "pekerjaan_ayah": 5.0,
+  "pekerjaan_ibu": 1.0,
+  "pendidikan_ayah": 6.0,
+  "pendidikan_ibu": 6.0,
+  "kepemilikan_jamban": 1.0,
+  "lokasi_air_minum": 8.0,
+  "pembuangan_limbah_cair": 5.0,
+  "pembuangan_tinja": 2.0,
+  "sumber_air_minum": 3.0,
+  "berat_badan_lahir_g": 3100.0,
+  "panjang_badan_lahir_cm": 49.0,
+  "usia_kandungan_minggu": 38.0,
+  "kepemilikan_buku_kia": 1.0,
+  "imunisasi_hb0": 1.0,
+  "imunisasi_bcg": 1.0,
+  "imunisasi_dpt_hb_hib_lanjutan": 2.0,
+  "bblr": 0.0
+}

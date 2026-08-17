@@ -8,6 +8,7 @@ use App\Models\Balita;
 use App\Models\FaktorRisiko;
 use App\Models\Pemeriksaan;
 use App\Services\PrediksiRisikoService;
+use RuntimeException;
 
 class PrediksiRisikoController extends Controller
 {
@@ -37,6 +38,10 @@ class PrediksiRisikoController extends Controller
             default => null,
         };
 
-        return $this->prediksiRisikoService->hitung($faktorRisiko, $statusGiziTerakhir);
+        try {
+            return $this->prediksiRisikoService->hitung($balita, $faktorRisiko, $statusGiziTerakhir);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
+        }
     }
 }

@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'ml' => [
+        // Microservice Python (ml-service/) yang meng-host champion model
+        // prediksi risiko gizi kurang. Lihat docs/champion-model-integration.md.
+        'url' => env('ML_SERVICE_URL', 'http://127.0.0.1:8020'),
+    ],
+
 ];
