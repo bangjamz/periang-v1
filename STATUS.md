@@ -8,28 +8,35 @@ NgodingPakeAI. Setelah reconnect, sinkronkan checklist ini dengan hasil
 - **Repo**: https://github.com/bangjamz/periang-v1
 - **Tech stack**: Next.js (frontend) · Laravel + PostgreSQL (backend) · deploy VPS
 
-## ⭐ Upcoming — Model Prediksi Risiko (champion ML algorithm)
+## ⭐ In Progress — Model Prediksi Risiko (champion ML algorithm)
 
-**Belum ditambahkan ke server NgodingPakeAI** — dicatat di sini dulu atas
-permintaan user (2026-08-14) supaya tidak hilang, sambil 36 task Fase 4
-(polish UI + wiring) berjalan. **Ini prioritas penting user berikutnya.**
+**Status per 2026-08-14: model asli DITEMUKAN & DIVERIFIKASI bisa jalan —
+implementasi sedang berjalan di sesi lokal.** Sebelumnya cuma dicatat
+sebagai rencana; sekarang sudah PRD resmi + riset teknis lengkap, belum
+dikirim ke server NgodingPakeAI (task loop lokal, di luar plan v9).
 
-- **Kondisi saat ini**: `backend/app/Services/PrediksiRisikoService.php`
-  masih **rule-based placeholder** (skor berbobot manual per faktor risiko,
-  bukan model ML). Komentar di kode sudah menandainya sebagai pengganti
-  sementara.
-- **Rencana sesuai PRD v9** (bagian Architecture): backend akan memanggil
-  layanan AI/Prediksi eksternal lewat **InsForge Model Gateway** untuk
-  menghitung tingkat risiko gizi kurang dari faktor risiko balita.
-- **Titik integrasi**: `PrediksiRisikoService::hitung()` diganti/dibungkus
-  agar memanggil model champion user (lewat InsForge Model Gateway atau
-  gateway lain) alih-alih hitung skor manual. Kontrak endpoint
-  `GET /api/balita/{id}/prediksi` (response: skor, tingkat_risiko,
-  faktor_kontribusi, rekomendasi_umum, rekomendasi) sebaiknya dipertahankan
-  supaya frontend tidak perlu berubah.
-- **Next step**: setelah 36 task Fase 4 selesai, susun task/fitur baru di
-  server NgodingPakeAI untuk fitur ini (user akan minta bantuan prompt-nya
-  lagi seperti sebelumnya).
+- **Model ditemukan di**: `disertasi-ita-2022-2024/model/champion_model_2022_2024.pkl`
+  — Gradient Boosting (scikit-learn **1.7.2**, wajib versi persis), recall
+  0.86, AUC 0.68, threshold klasifikasi **0.16**, butuh **21 fitur granular**
+  (bukan 5 field faktor_risiko yang ada sekarang). Sudah dites langsung:
+  load model + 1 prediksi sampel → hasil masuk akal (proba 0.11 untuk
+  balita profil normal).
+- **Keputusan produk (2026-08-14)**: skema Faktor Risiko diperluas ke 21
+  field penuh (bukan mapping perkiraan/default) — versi lama 5 field
+  **dipertahankan di skema, tidak dihapus**, supaya bisa ditelusuri balik.
+- **Arsitektur**: model `.pkl` adalah objek Python, Laravel tidak bisa
+  jalankan langsung → dibutuhkan microservice Python (FastAPI) yang
+  meng-host model & expose `POST /predict`, dipanggil dari
+  `PrediksiRisikoService::hitung()` lewat HTTP. Kontrak endpoint
+  `GET /api/balita/{id}/prediksi` (skor, tingkat_risiko, faktor_kontribusi,
+  rekomendasi_umum, rekomendasi) dipertahankan — frontend tidak berubah.
+- **Dokumen lengkap**:
+  - Riset teknis: [docs/champion-model-integration.md](docs/champion-model-integration.md)
+  - PRD resmi: [docs/prd/prd-v10-2026-08-14.md](docs/prd/prd-v10-2026-08-14.md)
+  - Bahan Bab IV disertasi: [docs/bab4-implementasi-model-periang.md](docs/bab4-implementasi-model-periang.md)
+  - Checklist task: [backlog.md](backlog.md) Epic 3
+- **Next step**: implementasi migration 21 field + form baru + microservice
+  Python + integrasi `PrediksiRisikoService` — sedang dikerjakan.
 
 ## Setup lokal
 

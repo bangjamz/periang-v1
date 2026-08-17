@@ -21,6 +21,27 @@ yang sama — file ini cuma ringkasan diff-nya.
 
 ---
 
+## v10 (2026-08-14)
+
+- **Ditambahkan:** fitur baru "Integrasi Champion Model Prediksi Risiko" —
+  mengganti `PrediksiRisikoService` rule-based dengan model ML asli hasil
+  disertasi (`champion_model_2022_2024.pkl`, Gradient Boosting, scikit-learn
+  1.7.2), lewat microservice Python (FastAPI) yang dipanggil dari Laravel.
+- **Diubah:** skema Faktor Risiko diperluas dari 5 field ke 21 field
+  granular sesuai kebutuhan model — kolom lama **dipertahankan** (tidak
+  dihapus), sesuai keputusan user.
+- **Alasan/konteks:** riset langsung ke
+  `disertasi-ita-2022-2024/` (2026-08-14) menemukan model champion sudah
+  siap pakai, bukan lagi rencana abstrak. Ini fitur prioritas utama user
+  sejak sebelumnya (lihat catatan "Upcoming" di STATUS.md sebelum PRD ini
+  dibuat).
+- File PRD lengkap: [`prd-v10-2026-08-14.md`](prd-v10-2026-08-14.md).
+- Materi tambahan (bukan bagian PRD, untuk kebutuhan akademik user):
+  [`../bab4-implementasi-model-periang.md`](../bab4-implementasi-model-periang.md)
+  — bahan Bab IV disertasi tentang penerapan praktis model ke PERIANG.
+
+---
+
 <!--
 Template entri baru — salin & isi setiap kali ada PRD versi baru:
 
