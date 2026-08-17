@@ -93,33 +93,15 @@ export default function MasukPage() {
 
   return (
     // Breakout dari app-shell (dibatasi max-w-5xl di layout.tsx untuk
-    // halaman internal) supaya split hero+form memenuhi lebar layar penuh
-    // di desktop, bukan terjepit sempit di tengah dengan banyak ruang
-    // kosong kiri-kanan.
-    <div className="relative left-1/2 flex w-screen -translate-x-1/2 flex-1 flex-col lg:flex-row">
-      <div className="relative hidden shrink-0 overflow-hidden lg:block lg:w-[42%]">
-        <Image
-          src="/images/hero/hero-web.webp"
-          alt="Kader posyandu membantu ibu memantau tumbuh kembang balita"
-          fill
-          priority
-          sizes="42vw"
-          className="object-cover"
-        />
-      </div>
+    // halaman internal) supaya background gradasi memenuhi lebar layar
+    // penuh di desktop. Card login tetap di tengah — tidak ada lagi gambar
+    // hero besar yang dipaksa jadi panel/background (sempat terpotong
+    // jelek di layar lebar).
+    <div className="relative left-1/2 flex min-h-full w-screen -translate-x-1/2 flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-sky-50 via-white to-emerald-50 px-4 py-10 dark:from-sky-950/40 dark:via-black dark:to-emerald-950/40">
+      <div className="pointer-events-none absolute -top-24 -left-24 size-72 rounded-full bg-sky-200/50 blur-3xl dark:bg-sky-900/30" />
+      <div className="pointer-events-none absolute -right-24 -bottom-24 size-72 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-900/30" />
 
-      <div className="relative overflow-hidden lg:hidden">
-        <Image
-          src="/images/hero/hero-mobile.webp"
-          alt="Kader posyandu membantu ibu memantau tumbuh kembang balita"
-          width={1080}
-          height={640}
-          priority
-          className="h-52 w-full object-cover object-[center_55%] sm:h-72"
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-8">
+      <div className="relative flex w-full flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-2">
           <Image
             src="/images/brand/app-icon-192.png"
