@@ -111,6 +111,28 @@ PRD: [docs/prd/prd-v10-2026-08-14.md](docs/prd/prd-v10-2026-08-14.md).
       balita. Bisa ditingkatkan nanti kalau dibutuhkan penjelasan lebih
       detail per prediksi.
 
+## Epic 5 — Redesign Form Faktor Risiko ML (UX lebih "asyik") ⭐ DAYA JUAL
+
+**Kenapa:** fitur Prediksi Risiko (model ML) adalah nilai jual utama
+aplikasi ini menurut user (2026-08-17), tapi form-nya saat ini (16 field
+angka mentah dalam grid statis) terasa kaku, tidak interaktif, dan kurang
+meyakinkan untuk fitur "andalan". User minta pengalaman pengisian yang
+lebih menarik — dicontohkan seperti Typeform (satu pertanyaan per layar,
+tombol next/back, pilihan berbentuk kartu/opsi, bukan cuma input angka).
+
+- [ ] **Rancang & bangun wizard pengisian faktor risiko bertahap** —
+      ganti grid 16 input statis di `faktor-risiko-form.tsx` dengan alur
+      step-by-step (1 pertanyaan per layar atau dikelompokkan per tema:
+      kehamilan & kelahiran, rumah tangga, sanitasi, imunisasi), tombol
+      Lanjut/Kembali, progress indicator, transisi halus.
+  - Prasyarat: field kategorikal (pekerjaan, pendidikan, sanitasi, dll)
+    perlu label pilihan asli (bukan angka kode) — tergantung penyelesaian
+    task codebook SSGI di Epic 3 supaya opsinya bisa ditampilkan sebagai
+    kartu pilihan berlabel, bukan angka.
+  - Field numerik murni (usia kandungan, jumlah anggota rumah tangga, dll)
+    bisa tetap input angka tapi dengan komponen yang lebih besar/nyaman
+    (mis. stepper +/-, bukan `<input type=number>` polos).
+
 ## Epic 4 — Deployment Produksi ke VPS
 
 **Kenapa:** user sudah punya VPS + domain `periang.id` + Google Workspace
@@ -128,6 +150,41 @@ di atas selesai.
       untuk web app, `api.periang.id` untuk backend, MX record tetap ke
       Google Workspace untuk email, pasang SSL (certbot) di kedua
       subdomain.
+
+## Epic 6 — Redesign Tampilan Desktop
+
+**Kenapa:** user tegas menyampaikan (2026-08-17) versi desktop aplikasi
+ini "jelek" — PERIANG dibangun mobile-first, dan tampilan desktop terasa
+seperti versi mobile yang dipaksa melebar, bukan dirancang khusus.
+**Eksplisit diminta TIDAK dikerjakan sekarang** — dicatat sebagai rencana
+redesign terpisah untuk nanti.
+
+Keluhan konkret yang sudah ditemukan (jadi bahan redesign, bukan langsung
+diperbaiki satu-satu):
+- Gambar hero/ilustrasi yang sama dipakai mentah-mentah di mobile & desktop
+  lewat `object-cover` crop otomatis — hasilnya kepala karakter terpotong
+  di mobile, dan gambar jadi "tipis"/pipih tidak proporsional di desktop.
+  Saran user: mobile boleh crop/tarik ke bawah, tapi desktop sebaiknya
+  gambar ditampilkan utuh berbentuk kotak (persegi) di luar area
+  header/nav, bukan dipaksa jadi strip tipis memanjang.
+- Halaman-halaman internal (Cek Gizi, Balita, dst.) di desktop terlihat
+  seperti card mobile yang di-center dengan banyak ruang kosong di
+  kiri-kanan (`max-w-5xl` di `layout.tsx`) — perlu dipikirkan ulang: apakah
+  tetap bounded-card ala mobile-app, atau desktop dapat layout khususnya
+  sendiri (mis. sidebar nav, grid multi-kolom, dsb) alih-alih sekadar
+  melebarkan versi mobile.
+- Halaman Masuk sempat berkali-kali direvisi ad-hoc (hero dilepas total per
+  2026-08-17 supaya cepat stabil) — perlu didesain ulang dengan sengaja
+  untuk desktop, bukan tempelan dari versi mobile.
+
+- [ ] **Riset/rancang arahan desain desktop yang proper** — tentukan pola
+      layout desktop yang disengaja (bukan derivasi otomatis dari mobile):
+      breakpoint mana yang dapat treatment berbeda, bagaimana pola
+      penempatan gambar/ilustrasi per breakpoint, dan bagaimana bounded
+      card `max-w-5xl` diperlakukan (dipertahankan/diganti).
+- [ ] **Terapkan ke seluruh halaman** setelah arahan desain disepakati
+      (bukan per-halaman ad-hoc seperti yang terjadi di `/masuk`
+      2026-08-17).
 
 ---
 

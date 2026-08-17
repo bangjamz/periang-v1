@@ -7,13 +7,6 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,21 +18,6 @@ type FormState = {
 };
 
 const KOSONG: FormState = { email: "", kataSandi: "" };
-
-const LANGKAH = [
-  {
-    src: "/images/onboarding/step-1.webp",
-    label: "1. Isi Data Balita",
-  },
-  {
-    src: "/images/onboarding/step-2.webp",
-    label: "2. Analisis Otomatis",
-  },
-  {
-    src: "/images/onboarding/step-3.webp",
-    label: "3. Lihat Hasil",
-  },
-] as const;
 
 function validasi(form: FormState): Partial<Record<keyof FormState, string>> {
   const error: Partial<Record<keyof FormState, string>> = {};
@@ -94,123 +72,104 @@ export default function MasukPage() {
   return (
     // Breakout dari app-shell (dibatasi max-w-5xl di layout.tsx untuk
     // halaman internal) supaya background gradasi memenuhi lebar layar
-    // penuh di desktop. Card login tetap di tengah — tidak ada lagi gambar
-    // hero besar yang dipaksa jadi panel/background (sempat terpotong
-    // jelek di layar lebar).
-    <div className="relative left-1/2 flex min-h-full w-screen -translate-x-1/2 flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-sky-50 via-white to-emerald-50 px-4 py-10 dark:from-sky-950/40 dark:via-black dark:to-emerald-950/40">
-      <div className="pointer-events-none absolute -top-24 -left-24 size-72 rounded-full bg-sky-200/50 blur-3xl dark:bg-sky-900/30" />
-      <div className="pointer-events-none absolute -right-24 -bottom-24 size-72 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-900/30" />
+    // penuh. Satu kolom tunggal terpusat (bukan strip hero terpisah +
+    // celah kosong) supaya seluruhnya muat tanpa scroll di layar kecil.
+    <div className="relative left-1/2 -mb-[calc(4.5rem+env(safe-area-inset-bottom))] flex min-h-dvh w-screen -translate-x-1/2 items-center justify-center overflow-hidden bg-gradient-to-br from-sky-50 via-white to-emerald-50 px-4 py-3 sm:mb-0 dark:from-sky-950/40 dark:via-black dark:to-emerald-950/40">
+      <div
+        className="pointer-events-none absolute -top-24 -left-24 size-72 rounded-full bg-sky-200/50 blur-3xl dark:bg-sky-900/30"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-24 -bottom-24 size-72 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-900/30"
+        aria-hidden
+      />
 
-      <div className="relative flex w-full flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-2">
+      <div className="relative flex w-full max-w-sm flex-col overflow-hidden rounded-3xl bg-white shadow-xl dark:bg-zinc-900">
+        {/* Gambar hero sengaja dilepas dulu (sempat terpotong jelek di
+            mobile & terlalu tipis di desktop) — penanganan hero mobile vs
+            desktop yang proper masuk rencana redesign terpisah, lihat
+            backlog.md "Redesign Tampilan Desktop". */}
+        <div className="flex flex-col items-center gap-0.5 px-6 pt-6">
           <Image
             src="/images/brand/app-icon-192.png"
             alt="Logo PERIANG"
-            width={56}
-            height={56}
-            className="size-14 rounded-2xl"
+            width={36}
+            height={36}
+            className="size-9 rounded-lg"
           />
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
             PERIANG
           </h1>
-          <p className="text-center text-sm text-zinc-500">
+          <p className="text-center text-[11px] text-zinc-500">
             Prediksi dan Analisis Balita Gizi Kurang
           </p>
         </div>
 
-        <Card className="w-full max-w-sm border-zinc-100 shadow-sm dark:border-zinc-800">
-          <CardHeader>
-            <CardTitle>Masuk</CardTitle>
-            <CardDescription>
-              Masuk sebagai kader posyandu untuk mengelola data gizi balita.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="username"
-                  placeholder="nama@posyandu.id"
-                  value={form.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  aria-invalid={!!error.email}
-                />
-                {error.email && (
-                  <p className="text-xs text-rose-600">{error.email}</p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="kata-sandi">Kata Sandi</Label>
-                <Input
-                  id="kata-sandi"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Masukkan kata sandi"
-                  value={form.kataSandi}
-                  onChange={(e) => handleChange("kataSandi", e.target.value)}
-                  aria-invalid={!!error.kataSandi}
-                />
-                {error.kataSandi && (
-                  <p className="text-xs text-rose-600">{error.kataSandi}</p>
-                )}
-                <Link
-                  href="/lupa-kata-sandi"
-                  className="self-end text-xs text-sky-600 hover:underline dark:text-sky-400"
-                >
-                  Lupa kata sandi?
-                </Link>
-              </div>
-
-              <ErrorMessage>{pesanGagal}</ErrorMessage>
-
-              <Button
-                type="submit"
-                disabled={memproses}
-                className="bg-sky-500 hover:bg-sky-600"
-              >
-                <FontAwesomeIcon icon={faRightToBracket} />
-                {memproses ? "Memproses..." : "Masuk"}
-              </Button>
-
-              <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
-                <FontAwesomeIcon icon={faLock} className="size-3" />
-                Demo: ratna.dewi@posyandu.id / posyandu123
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="grid w-full max-w-sm grid-cols-3 gap-2">
-          {LANGKAH.map((langkah) => (
-            <div
-              key={langkah.label}
-              className="flex flex-col items-center gap-1.5"
-            >
-              <Image
-                src={langkah.src}
-                alt={langkah.label}
-                width={80}
-                height={80}
-                className="size-16 rounded-xl object-cover sm:size-20"
-              />
-              <p className="text-center text-[11px] font-medium text-zinc-500">
-                {langkah.label}
-              </p>
-            </div>
-          ))}
+        <div className="px-6 pt-3 pb-1">
+          <p className="text-sm font-semibold">Masuk</p>
+          <p className="text-xs text-zinc-500">
+            Masuk sebagai kader posyandu untuk mengelola data gizi balita.
+          </p>
         </div>
 
-        <Image
-          src="/images/banners/launch.webp"
-          alt="PERIANG kini hadir untuk membantu kader posyandu memantau gizi balita"
-          width={1080}
-          height={1080}
-          className="w-full max-w-sm rounded-2xl"
-        />
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-2.5 px-6 pb-5"
+        >
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="username"
+              placeholder="nama@posyandu.id"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              aria-invalid={!!error.email}
+            />
+            {error.email && (
+              <p className="text-xs text-rose-600">{error.email}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="kata-sandi">Kata Sandi</Label>
+            <Input
+              id="kata-sandi"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Masukkan kata sandi"
+              value={form.kataSandi}
+              onChange={(e) => handleChange("kataSandi", e.target.value)}
+              aria-invalid={!!error.kataSandi}
+            />
+            {error.kataSandi && (
+              <p className="text-xs text-rose-600">{error.kataSandi}</p>
+            )}
+            <Link
+              href="/lupa-kata-sandi"
+              className="self-end text-xs text-sky-600 hover:underline dark:text-sky-400"
+            >
+              Lupa kata sandi?
+            </Link>
+          </div>
+
+          <ErrorMessage>{pesanGagal}</ErrorMessage>
+
+          <Button
+            type="submit"
+            disabled={memproses}
+            className="bg-sky-500 hover:bg-sky-600"
+          >
+            <FontAwesomeIcon icon={faRightToBracket} />
+            {memproses ? "Memproses..." : "Masuk"}
+          </Button>
+
+          <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
+            <FontAwesomeIcon icon={faLock} className="size-3" />
+            Demo: ratna.dewi@posyandu.id / posyandu123
+          </p>
+        </form>
       </div>
     </div>
   );
