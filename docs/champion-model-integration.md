@@ -38,27 +38,74 @@ Python venv terpisah dengan `scikit-learn==1.7.2`.
 
 | # | Kolom | Arti | Sumber di PERIANG saat ini |
 |---|-------|------|------------------------------|
-| 1 | `jenis_kelamin` | 0=Laki-laki, 1=Perempuan | ✅ `balita.jenis_kelamin` (perlu diremap L/P→0/1) |
+| 1 | `jenis_kelamin` | 0=Laki-laki, 1=Perempuan | ✅ `balita.jenis_kelamin` (diremap L/P→0/1 di `PrediksiRisikoService`) |
 | 2 | `umur_bulan` | umur balita saat diperiksa | ✅ dihitung dari `balita.tanggal_lahir` |
-| 3 | `jumlah_art` | jumlah anggota rumah tangga | ❌ belum ada field |
-| 4 | `jumlah_balita_rt` | jumlah balita dalam 1 rumah tangga | ❌ belum ada field |
-| 5 | `pekerjaan_ayah` | kode SSGI pekerjaan ayah | ❌ belum ada field |
-| 6 | `pekerjaan_ibu` | kode SSGI pekerjaan ibu | ❌ belum ada field |
-| 7 | `pendidikan_ayah` | kode SSGI pendidikan ayah | ❌ belum ada field |
-| 8 | `pendidikan_ibu` | kode SSGI pendidikan ibu | ❌ belum ada field |
-| 9 | `kepemilikan_jamban` | kode SSGI jenis jamban | ⚠️ ada versi kasar (`sanitasi`: baik/kurang_baik) |
-| 10 | `lokasi_air_minum` | kode SSGI lokasi sumber air | ❌ belum ada field |
-| 11 | `pembuangan_limbah_cair` | kode SSGI | ❌ belum ada field |
-| 12 | `pembuangan_tinja` | kode SSGI | ❌ belum ada field |
-| 13 | `sumber_air_minum` | kode SSGI jenis sumber air | ❌ belum ada field |
-| 14 | `berat_badan_lahir_g` | berat lahir dalam **gram** | ⚠️ ada versi kasar (`riwayat_lahir` enum) |
-| 15 | `panjang_badan_lahir_cm` | panjang lahir dalam cm | ❌ belum ada field |
-| 16 | `usia_kandungan_minggu` | usia kandungan saat lahir | ❌ belum ada field |
-| 17 | `kepemilikan_buku_kia` | punya buku KIA atau tidak (0/1) | ❌ belum ada field |
-| 18 | `imunisasi_hb0` | imunisasi Hepatitis B0 (0/1) | ⚠️ ada versi kasar (`imunisasi`: ya/tidak, digabung semua jenis) |
-| 19 | `imunisasi_bcg` | imunisasi BCG (0/1) | ⚠️ sama seperti di atas |
-| 20 | `imunisasi_dpt_hb_hib_lanjutan` | imunisasi DPT-HB-Hib lanjutan (0/1) | ⚠️ sama seperti di atas |
+| 3 | `jumlah_art` | jumlah anggota rumah tangga | ✅ `faktor_risiko.jumlah_art` (input angka) |
+| 4 | `jumlah_balita_rt` | jumlah balita dalam 1 rumah tangga | ✅ `faktor_risiko.jumlah_balita_rt` (input angka) |
+| 5 | `pekerjaan_ayah` | kode SSGI pekerjaan ayah | ✅ dropdown berlabel (8 opsi, lihat bagian 2a) |
+| 6 | `pekerjaan_ibu` | kode SSGI pekerjaan ibu | ✅ dropdown berlabel (8 opsi) |
+| 7 | `pendidikan_ayah` | kode SSGI pendidikan ayah | ✅ dropdown berlabel (6 opsi) |
+| 8 | `pendidikan_ibu` | kode SSGI pendidikan ibu | ✅ dropdown berlabel (6 opsi) |
+| 9 | `kepemilikan_jamban` | kode SSGI jenis jamban | ⚠️ input kode mentah — sumber pasti belum ditemukan |
+| 10 | `lokasi_air_minum` | kode SSGI lokasi sumber air | ⚠️ input kode mentah — sumber pasti belum ditemukan |
+| 11 | `pembuangan_limbah_cair` | kode SSGI | ⚠️ input kode mentah — sumber pasti belum ditemukan |
+| 12 | `pembuangan_tinja` | kode SSGI | ⚠️ input kode mentah — sumber pasti belum ditemukan |
+| 13 | `sumber_air_minum` | kode SSGI jenis sumber air | ✅ dropdown berlabel (14 opsi, cocok persis dgn data) |
+| 14 | `berat_badan_lahir_g` | berat lahir dalam **gram** | ✅ `balita.berat_lahir` (kg × 1000) |
+| 15 | `panjang_badan_lahir_cm` | panjang lahir dalam cm | ✅ `balita.tinggi_lahir` |
+| 16 | `usia_kandungan_minggu` | usia kandungan saat lahir | ✅ `faktor_risiko.usia_kandungan_minggu` (input angka) |
+| 17 | `kepemilikan_buku_kia` | status buku KIA (kode multi-level, **bukan** 0/1) | ✅ dropdown berlabel (4 opsi) |
+| 18 | `imunisasi_hb0` | status imunisasi Hepatitis B0 (kode multi-level, **bukan** 0/1) | ✅ dropdown berlabel (6 opsi) |
+| 19 | `imunisasi_bcg` | status imunisasi BCG (kode multi-level, **bukan** 0/1) | ✅ dropdown berlabel (6 opsi) |
+| 20 | `imunisasi_dpt_hb_hib_lanjutan` | status imunisasi DPT-HB-Hib lanjutan (kode multi-level, **bukan** 0/1) | ✅ dropdown berlabel (6 opsi) |
 | 21 | `bblr` | Berat Badan Lahir Rendah, `berat_badan_lahir_g < 2500` (dihitung, bukan diinput) | turunan dari #14 |
+
+> **Koreksi 2026-08-18**: dokumen versi awal salah menandai #17-20 sebagai
+> biner (0/1) — data asli ternyata kode SSGI multi-level (mis. imunisasi:
+> 1=ada catatan tanggal, 2=ada catatan tanpa tanggal, 3=berdasar ingatan,
+> 4=tidak, 7=belum waktunya, 8=tidak tahu). Dikoreksi setelah cross-check ke
+> `Kuesioner SSGI 2024.md` (lihat bagian 2a).
+
+## 2a. Kode SSGI yang sudah dikonfirmasi (2026-08-18)
+
+User memberikan 3 dokumen SSGI resmi (`Kuesioner SSGI 2024.pdf/md`,
+`PEDOMAN ANALISIS DATA SSGI 2024.pdf`, `SSGI Dalam Angka 2024.md`), lokasi:
+`~/Downloads/ClaudeOS/Disertasi/Ropitasari/Data/SSGI/`. Hasil cross-check:
+
+- **Imunisasi (HB0/BCG/DPT-HB-Hib Lanjutan)** — ditemukan persis di
+  `Kuesioner SSGI 2024.md` Blok X (P1002, kolom "Status & Sumber
+  Informasi"): `1=Ya diimunisasi (ada tanggal)`, `2=Ya diimunisasi (tanpa
+  tanggal)`, `3=Ya (berdasarkan ingatan)`, `4=Tidak imunisasi`,
+  `7=Belum waktunya diberikan`, `8=Tidak Tahu`. **Cocok persis** dengan
+  nilai unik yang ada di data training (`[1,2,3,7,8]`/`[1,2,3,8]`).
+- **Kepemilikan Buku KIA** — `Kuesioner SSGI 2024.md` Blok X (P1001):
+  `1=Terisi lengkap`, `2=Terisi tidak lengkap`, `3=Ada tidak terisi`,
+  `4=Tidak punya`.
+- **Sumber Air Minum** — `SSGI Dalam Angka 2024.md` Tabel 5.174 (14
+  kategori resmi: Ledeng Meteran, Ledeng Eceran, Keran Umum, Hidran Umum,
+  Terminal Air, PAH, Sumur Bor/Pompa, Sumur Terlindung, Mata Air
+  Terlindung, Air Kemasan Bermerk, Air Isi Ulang, Sumur Tak Terlindungi,
+  Mata Air Tak Terlindungi, Air Permukaan). **Cocok persis** — 14 kategori
+  vs 14 nilai unik di data.
+- **Pendidikan & Pekerjaan (ayah/ibu)** — **tidak** ditemukan di
+  instrumen kuesioner mentah (dokumen yang diberikan hanya berisi
+  kuesioner individu balita, Blok VIII-XVI; pertanyaan pendidikan/pekerjaan
+  orang tua ada di kuesioner rumah tangga terpisah yang tidak tersedia).
+  Label yang dipakai sekarang **diturunkan dari kategori agregat publikasi**
+  `SSGI Dalam Angka 2024.md` (Pendidikan Ibu: 6 kategori Tidak
+  Sekolah→Tamat D1/D2/D3/PT; Pekerjaan KRT: 8 kategori Tidak
+  Bekerja→Lainnya) — **kemungkinan kecil urutan/pembagian berbeda** dari
+  kode mentah asli. Verifikasi ulang kalau kuesioner rumah tangga resmi
+  ditemukan.
+- **Kepemilikan jamban, lokasi air minum, pembuangan limbah cair,
+  pembuangan tinja** — belum ditemukan sumber yang cukup pasti (dokumen
+  yang ada hanya berisi kategori HASIL KLASIFIKASI gabungan seperti "Akses
+  Aman/Layak/Belum Layak", bukan kode mentah per pertanyaan) — **masih
+  input kode angka mentah** di form, bukan dropdown.
+
+Implementasi dropdown ada di `frontend/src/components/faktor-risiko-form.tsx`
+(konstanta `OPSI_PENDIDIKAN`, `OPSI_PEKERJAAN`, `OPSI_SUMBER_AIR`,
+`OPSI_STATUS_IMUNISASI`, `OPSI_BUKU_KIA`).
 
 **Kesimpulan penting:** tabel `faktor_risiko` PERIANG saat ini (migration
 `2026_08_14_023612_create_faktor_risiko_table.php`) cuma punya **5 kolom

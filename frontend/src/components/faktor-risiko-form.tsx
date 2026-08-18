@@ -69,10 +69,71 @@ function bikinSelect<T extends string>(
 type LabelMap<T extends string> = Record<T, string>;
 
 /**
- * 16 field granular untuk champion model ML. `kode: true` = field belum
- * punya buku kode SSGI resmi (lihat docs/champion-model-integration.md di
- * root repo) — ditampilkan sebagai input angka kode mentah, bukan dropdown
- * berlabel, sampai codebook resmi tersedia.
+ * Opsi berlabel untuk field yang kode SSGI-nya sudah dikonfirmasi dari
+ * dokumen resmi (Kuesioner SSGI 2024 & "SSGI Dalam Angka 2024") — lihat
+ * docs/champion-model-integration.md untuk sumber & catatan akurasi
+ * (pendidikan/pekerjaan diturunkan dari kategori publikasi agregat SSGI,
+ * bukan dari instrumen mentah — kemungkinan kecil beda urutan, verifikasi
+ * ulang kalau kuesioner rumah tangga asli ditemukan).
+ */
+const OPSI_PENDIDIKAN = [
+  { value: 1, label: "Tidak Sekolah" },
+  { value: 2, label: "Tidak Tamat SD" },
+  { value: 3, label: "Tamat SD" },
+  { value: 4, label: "Tamat SLTP" },
+  { value: 5, label: "Tamat SLTA" },
+  { value: 6, label: "Tamat D1/D2/D3/PT" },
+];
+
+const OPSI_PEKERJAAN = [
+  { value: 1, label: "Tidak Bekerja/Sekolah" },
+  { value: 2, label: "PNS/TNI/Polri/BUMN/BUMD" },
+  { value: 3, label: "Pegawai Swasta" },
+  { value: 4, label: "Wiraswasta" },
+  { value: 5, label: "Petani/Buruh Tani" },
+  { value: 6, label: "Nelayan" },
+  { value: 7, label: "Buruh/Sopir/Ojek/Pembantu" },
+  { value: 8, label: "Lainnya" },
+];
+
+const OPSI_SUMBER_AIR = [
+  { value: 1, label: "Ledeng Meteran (keran individual)" },
+  { value: 2, label: "Ledeng Eceran" },
+  { value: 3, label: "Keran Umum (komunal)" },
+  { value: 4, label: "Hidran Umum" },
+  { value: 5, label: "Terminal Air" },
+  { value: 6, label: "Penampungan Air Hujan (PAH)" },
+  { value: 7, label: "Sumur Bor/Pompa" },
+  { value: 8, label: "Sumur Terlindung" },
+  { value: 9, label: "Mata Air Terlindung" },
+  { value: 10, label: "Air Kemasan Bermerk" },
+  { value: 11, label: "Air Isi Ulang" },
+  { value: 12, label: "Sumur Tak Terlindungi" },
+  { value: 13, label: "Mata Air Tak Terlindungi" },
+  { value: 14, label: "Air Permukaan" },
+];
+
+const OPSI_STATUS_IMUNISASI = [
+  { value: 1, label: "Ya, ada catatan tanggal" },
+  { value: 2, label: "Ya, tercatat tanpa tanggal" },
+  { value: 3, label: "Ya, berdasarkan ingatan" },
+  { value: 4, label: "Tidak diimunisasi" },
+  { value: 7, label: "Belum waktunya" },
+  { value: 8, label: "Tidak tahu" },
+];
+
+const OPSI_BUKU_KIA = [
+  { value: 1, label: "Ya, terisi lengkap" },
+  { value: 2, label: "Ya, terisi tidak lengkap" },
+  { value: 3, label: "Ada, tidak terisi" },
+  { value: 4, label: "Tidak punya" },
+];
+
+/**
+ * 16 field granular untuk champion model ML. Field dengan `options`
+ * ditampilkan sebagai dropdown berlabel (kode SSGI-nya sudah dikonfirmasi).
+ * `kode: true` = kode SSGI belum dikonfirmasi dari dokumen resmi — masih
+ * input angka mentah sampai sumbernya ditemukan.
  */
 const FIELD_MODEL: {
   key: keyof FaktorRisikoModel;
@@ -81,6 +142,7 @@ const FIELD_MODEL: {
   unit?: string;
   min?: number;
   max?: number;
+  options?: { value: number; label: string }[];
 }[] = [
   {
     key: "usiaKandunganMinggu",
@@ -96,12 +158,20 @@ const FIELD_MODEL: {
     min: 1,
     max: 20,
   },
-  { key: "pekerjaanAyah", label: "Pekerjaan Ayah", kode: true },
-  { key: "pekerjaanIbu", label: "Pekerjaan Ibu", kode: true },
-  { key: "pendidikanAyah", label: "Pendidikan Ayah", kode: true },
-  { key: "pendidikanIbu", label: "Pendidikan Ibu", kode: true },
+  { key: "pekerjaanAyah", label: "Pekerjaan Ayah", options: OPSI_PEKERJAAN },
+  { key: "pekerjaanIbu", label: "Pekerjaan Ibu", options: OPSI_PEKERJAAN },
+  {
+    key: "pendidikanAyah",
+    label: "Pendidikan Ayah",
+    options: OPSI_PENDIDIKAN,
+  },
+  { key: "pendidikanIbu", label: "Pendidikan Ibu", options: OPSI_PENDIDIKAN },
   { key: "kepemilikanJamban", label: "Kepemilikan Jamban", kode: true },
-  { key: "sumberAirMinum", label: "Sumber Air Minum", kode: true },
+  {
+    key: "sumberAirMinum",
+    label: "Sumber Air Minum",
+    options: OPSI_SUMBER_AIR,
+  },
   { key: "lokasiAirMinum", label: "Lokasi Sumber Air Minum", kode: true },
   {
     key: "pembuanganLimbahCair",
@@ -109,13 +179,25 @@ const FIELD_MODEL: {
     kode: true,
   },
   { key: "pembuanganTinja", label: "Pembuangan Tinja", kode: true },
-  { key: "kepemilikanBukuKia", label: "Kepemilikan Buku KIA", kode: true },
-  { key: "imunisasiHb0", label: "Imunisasi Hepatitis B0", kode: true },
-  { key: "imunisasiBcg", label: "Imunisasi BCG", kode: true },
+  {
+    key: "kepemilikanBukuKia",
+    label: "Kepemilikan Buku KIA",
+    options: OPSI_BUKU_KIA,
+  },
+  {
+    key: "imunisasiHb0",
+    label: "Imunisasi Hepatitis B0",
+    options: OPSI_STATUS_IMUNISASI,
+  },
+  {
+    key: "imunisasiBcg",
+    label: "Imunisasi BCG",
+    options: OPSI_STATUS_IMUNISASI,
+  },
   {
     key: "imunisasiDptHbHibLanjutan",
     label: "Imunisasi DPT-HB-Hib Lanjutan",
-    kode: true,
+    options: OPSI_STATUS_IMUNISASI,
   },
 ];
 
@@ -367,24 +449,47 @@ export function FaktorRisikoForm({
                 {f.label}
                 {f.kode && <span className="ml-1 text-zinc-400">(kode)</span>}
               </Label>
-              <div className="relative">
-                <Input
-                  id={`model-${f.key}`}
-                  type="number"
-                  inputMode="numeric"
-                  min={f.min ?? 0}
-                  max={f.max ?? 20}
-                  placeholder={f.kode ? "Kode" : "-"}
-                  value={model[f.key] ?? ""}
-                  onChange={(e) => handleChangeModel(f.key, e.target.value)}
-                  className={f.unit ? "pr-14" : undefined}
-                />
-                {f.unit && (
-                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-zinc-400">
-                    {f.unit}
-                  </span>
-                )}
-              </div>
+              {f.options ? (
+                <Select
+                  value={model[f.key]?.toString() ?? ""}
+                  onValueChange={(v) => handleChangeModel(f.key, v ?? "")}
+                >
+                  <SelectTrigger id={`model-${f.key}`} className="w-full">
+                    <SelectValue placeholder="Pilih">
+                      {() =>
+                        f.options!.find((o) => o.value === model[f.key])
+                          ?.label ?? "Pilih"
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {f.options.map((o) => (
+                      <SelectItem key={o.value} value={o.value.toString()}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="relative">
+                  <Input
+                    id={`model-${f.key}`}
+                    type="number"
+                    inputMode="numeric"
+                    min={f.min ?? 0}
+                    max={f.max ?? 20}
+                    placeholder={f.kode ? "Kode" : "-"}
+                    value={model[f.key] ?? ""}
+                    onChange={(e) => handleChangeModel(f.key, e.target.value)}
+                    className={f.unit ? "pr-14" : undefined}
+                  />
+                  {f.unit && (
+                    <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-zinc-400">
+                      {f.unit}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

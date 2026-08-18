@@ -86,23 +86,28 @@ PRD: [docs/prd/prd-v10-2026-08-14.md](docs/prd/prd-v10-2026-08-14.md).
       penuh**, 5 field lama dipertahankan (tidak dihapus).
 - [x] **Migration + form Faktor Risiko diperluas ke field granular** — 16
       kolom baru ditambahkan (`add_model_fields_to_faktor_risiko_table`),
-      `faktor-risiko-form.tsx` diperluas. Catatan: 13 dari 16 field masih
-      berupa **input kode angka mentah** (bukan dropdown berlabel) karena
-      buku kode kuesioner SSGI resmi belum ditemukan — lihat item baru di
-      bawah.
+      `faktor-risiko-form.tsx` diperluas.
 - [x] **Bangun microservice Python untuk serving model** —
       `ml-service/main.py` (FastAPI), pin `scikit-learn==1.7.2`, endpoint
       `POST /predict` dengan imputasi median otomatis untuk field kosong.
 - [x] **Integrasikan `PrediksiRisikoService` ke microservice** — rule-based
       diganti total, fallback 503 + pesan jelas kalau microservice mati
       (diverifikasi langsung: connection refused → 503, bukan 500 crash).
-- [ ] **Cari/dapatkan buku kode (codebook) resmi kuesioner SSGI 2022/2024**
-      — supaya 13 field kode mentah (pekerjaan/pendidikan ortu, jenis
-      jamban, sumber air, dll — daftar lengkap di
-      `docs/champion-model-integration.md`) bisa diganti jadi dropdown
-      berlabel manusia, bukan angka kode tanpa keterangan. User perlu cari
-      dokumen kuesioner SSGI resmi (BPS/Kemenkes/BKKBN) atau hubungi tim
-      SSGI.
+- [x] **Cari kode SSGI dari dokumen resmi** (2026-08-18, user memberikan
+      `Kuesioner SSGI 2024`, `PEDOMAN ANALISIS DATA SSGI 2024`, `SSGI Dalam
+      Angka 2024`) — **6 dari 10 field kode ditemukan & dikonversi ke
+      dropdown berlabel**: imunisasi HB0/BCG/DPT-HB-Hib Lanjutan (cocok
+      persis kuesioner), Kepemilikan Buku KIA (cocok persis), Sumber Air
+      Minum (cocok persis, 14/14 kategori), Pendidikan & Pekerjaan
+      ayah/ibu (diturunkan dari kategori agregat publikasi, bukan
+      instrumen mentah — lihat catatan akurasi di
+      `docs/champion-model-integration.md` bagian 2a).
+- [ ] **Cari kode SSGI untuk 4 field sisanya**: Kepemilikan Jamban, Lokasi
+      Air Minum, Pembuangan Limbah Cair, Pembuangan Tinja — belum
+      ditemukan di dokumen yang ada (cuma ada kategori hasil klasifikasi
+      gabungan "Akses Aman/Layak/dst", bukan kode mentah per pertanyaan).
+      Masih input kode angka mentah di form. Perlu kuesioner **rumah
+      tangga** SSGI (bukan kuesioner individu balita yang sudah ada).
 - [ ] **Deploy microservice ke VPS** — jalan sebagai service terpisah
       (systemd/pm2/docker) di samping Laravel & Next.js, lihat Epic 4.
 - [ ] **(Opsional) Real SHAP per-instance untuk faktor_kontribusi** — saat
